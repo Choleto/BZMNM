@@ -1,22 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bg">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio Clothes — Wardrobe</title>
+    <title>Bio Clothes — Гардероб</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app_header.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container wide">
-        <nav class="top-nav">
-            <strong>Bio Clothes</strong>
-            <span class="muted">Hi, {{ username }}</span>
-            <a href="{{ url_for('home') }}">Home</a>
-            <a href="{{ url_for('wardrobe') }}">Wardrobe</a>
-            <a href="{{ url_for('map_page') }}">Map</a>
-            <a href="{{ url_for('logout') }}">Logout</a>
-        </nav>
+    {% set active_page = 'wardrobe' %}
+    {% include 'includes/app_header.html' %}
 
+    <div class="container wide">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <ul class="flash-list">
@@ -28,16 +23,11 @@
         {% endwith %}
 
         <div class="wardrobe-shell">
-            <header class="wardrobe-strip">
-                <span class="wardrobe-strip-title">wardrobe</span>
-                <a href="{{ url_for('map_page') }}" class="wardrobe-charity-link">charity map</a>
-            </header>
-
             <div class="wardrobe-columns">
                 <aside class="wardrobe-sidebar">
-                    <h3 class="wardrobe-sidebar-heading">Clothes</h3>
+                    <h3 class="wardrobe-sidebar-heading">Дрехи</h3>
                     <ul class="wardrobe-cat-list">
-                        <li><button type="button" class="wardrobe-cat-btn is-active" data-filter="All">All</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn is-active" data-filter="All">Всички</button></li>
                         <li><button type="button" class="wardrobe-cat-btn" data-filter="Shirts">Shirts</button></li>
                         <li><button type="button" class="wardrobe-cat-btn" data-filter="T-shirts">T-shirts</button></li>
                         <li><button type="button" class="wardrobe-cat-btn" data-filter="Jackets">Jackets</button></li>
@@ -50,20 +40,20 @@
                 </aside>
 
                 <main class="wardrobe-main">
-                    <a href="{{ url_for('home') }}" class="wardrobe-add-link">Add new+</a>
+                    <a href="{{ url_for('home') }}" class="wardrobe-add-link">Добави нова+</a>
 
                     <div class="wardrobe-filters-bar">
-                        <span>Filters</span>
-                        <span class="wardrobe-filters-hint muted small">Pick a category on the left to filter.</span>
-                        <label class="wardrobe-sort-label" for="wardrobeSort">Sort by date added</label>
-                        <select id="wardrobeSort" class="wardrobe-sort-select" aria-label="Sort by date added">
-                            <option value="newest">Newest to oldest</option>
-                            <option value="oldest">Oldest to newest</option>
+                        <span>Филтри</span>
+                        <span class="wardrobe-filters-hint muted small">Избери категория отляво, за да филтрираш.</span>
+                        <label class="wardrobe-sort-label" for="wardrobeSort">Подреди по дата на добавяне</label>
+                        <select id="wardrobeSort" class="wardrobe-sort-select" aria-label="Подреди по дата на добавяне">
+                            <option value="newest">От най-нова към най-стара</option>
+                            <option value="oldest">От най-стара към най-нова</option>
                         </select>
                     </div>
 
                     {% if not all_items %}
-                        <p class="wardrobe-empty">No clothes yet. Use <strong>Add new+</strong> (or Home) to upload a photo.</p>
+                        <p class="wardrobe-empty">Все още няма дрехи. Използвай <strong>Добави нова+</strong> (или Начало), за да качиш снимка.</p>
                     {% else %}
                         <div class="wardrobe-grid" id="wardrobeGrid">
                             {% for item in all_items %}
@@ -72,19 +62,19 @@
                                         <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ item['type'] }}">
                                     </div>
                                     <p class="item-card-title">{{ item['type'] }}</p>
-                                    <form method="post" action="{{ url_for('delete_item', item_id=item['id']) }}" class="item-card-delete-form" onsubmit="return confirm('Remove this item from your wardrobe?');">
-                                        <button type="submit" class="btn-delete">Delete</button>
+                                    <form method="post" action="{{ url_for('delete_item', item_id=item['id']) }}" class="item-card-delete-form" onsubmit="return confirm('Да се премахне ли този артикул от гардероба?');">
+                                        <button type="submit" class="btn-delete">Изтрий</button>
                                     </form>
-                                    <p class="item-card-detail small"><strong>Color:</strong> {{ item['color'] }}</p>
-                                    <p class="muted small">Last worn: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}never{% endif %}</p>
-                                    <p class="small">Date added: <span class="js-date-added" data-item-id="{{ item['id'] }}">—</span></p>
-                                    <p class="item-times-worn small">Times worn: <span class="js-times" data-item-id="{{ item['id'] }}">0</span></p>
-                                    <button type="button" class="btn-wore-it">Wore it</button>
+                                    <p class="item-card-detail small"><strong>Цвят:</strong> {{ item['color'] }}</p>
+                                    <p class="muted small">Последно носене: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}никога{% endif %}</p>
+                                    <p class="small">Дата на добавяне: <span class="js-date-added" data-item-id="{{ item['id'] }}">—</span></p>
+                                    <p class="item-times-worn small">Пъти носена: <span class="js-times" data-item-id="{{ item['id'] }}">0</span></p>
+                                    <button type="button" class="btn-wore-it">Носих я</button>
                                     <form method="post" action="{{ url_for('mark_worn', item_id=item['id']) }}" id="form-mark-worn-{{ item['id'] }}" class="form-mark-worn-hidden" aria-hidden="true"></form>
                                 </article>
                             {% endfor %}
                         </div>
-                        <p class="wardrobe-filter-empty muted" id="wardrobeFilterEmpty" hidden>No items match this category. Try <strong>All</strong> or a different label.</p>
+                        <p class="wardrobe-filter-empty muted" id="wardrobeFilterEmpty" hidden>Няма артикули в тази категория. Опитай <strong>Всички</strong> или друга категория.</p>
                     {% endif %}
                 </main>
             </div>

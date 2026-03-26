@@ -1,0 +1,161 @@
+/* Bio Clother — shared navbar (glass / premium) */
+
+.bc-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 2000;
+    padding: 0 1rem;
+}
+
+.bc-navbar__bar {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 64px;
+    padding: 0.5rem 1rem;
+    margin-top: 0.5rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+        0 4px 24px rgba(15, 40, 30, 0.08),
+        0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+
+.bc-navbar__brand {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #14532d;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.bc-navbar__brand:hover {
+    color: #166534;
+    transform: translateY(-1px);
+}
+
+.bc-navbar__toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    background: rgba(20, 83, 45, 0.08);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.bc-navbar__toggle:hover {
+    background: rgba(20, 83, 45, 0.14);
+}
+
+.bc-navbar__toggle-line {
+    display: block;
+    width: 20px;
+    height: 2px;
+    margin: 0 auto;
+    background: #14532d;
+    border-radius: 1px;
+}
+
+.bc-navbar__menu {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.bc-navbar__links {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.bc-navbar__link {
+    padding: 0.5rem 0.85rem;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #3f3f46;
+    text-decoration: none;
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.bc-navbar__link:hover {
+    color: #14532d;
+    background: rgba(20, 83, 45, 0.08);
+    box-shadow: 0 2px 8px rgba(20, 83, 45, 0.1);
+}
+
+.bc-navbar__link.is-active {
+    color: #fff;
+    background: linear-gradient(135deg, #166534 0%, #22c55e 100%);
+    box-shadow: 0 4px 14px rgba(22, 101, 52, 0.35);
+}
+
+.bc-navbar__link--logout {
+    color: #b91c1c !important;
+}
+
+.bc-navbar__link--logout:hover {
+    color: #991b1b !important;
+    background: rgba(185, 28, 28, 0.1) !important;
+    box-shadow: none !important;
+}
+
+@media (max-width: 900px) {
+    .bc-navbar__toggle {
+        display: flex;
+        order: -1;
+    }
+
+    .bc-navbar__bar {
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .bc-navbar__brand {
+        flex: 1;
+        text-align: center;
+    }
+
+    .bc-navbar__menu {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.75rem 0 0.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .bc-navbar__menu.is-open {
+        display: flex;
+    }
+
+    .bc-navbar__links {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bc-navbar__link {
+        text-align: center;
+    }
+}

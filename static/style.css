@@ -63,35 +63,6 @@ h1 {
     margin-top: 0.5rem;
 }
 
-.wardrobe-strip {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    background: #e8eaed;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    margin-bottom: 1.25rem;
-}
-
-.wardrobe-strip-title {
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: lowercase;
-}
-
-.wardrobe-charity-link {
-    position: absolute;
-    right: 1rem;
-    font-size: 0.9rem;
-    color: #1a5fb4;
-    text-decoration: none;
-}
-
-.wardrobe-charity-link:hover {
-    text-decoration: underline;
-}
-
 .wardrobe-columns {
     display: grid;
     grid-template-columns: 168px 1fr;

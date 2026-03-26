@@ -1,0 +1,41 @@
+{# active_page: home | wardrobe | map #}
+<header class="bc-navbar" role="banner">
+    <div class="bc-navbar__bar">
+        <button type="button" class="bc-navbar__toggle" id="bcNavToggle" aria-expanded="false" aria-controls="bcNavMenu" aria-label="Отвори менюто">
+            <span class="bc-navbar__toggle-line"></span>
+            <span class="bc-navbar__toggle-line"></span>
+            <span class="bc-navbar__toggle-line"></span>
+        </button>
+
+        <a href="{{ url_for('home') }}" class="bc-navbar__brand">Bio Clother</a>
+
+        <nav class="bc-navbar__menu" id="bcNavMenu" aria-label="Основна навигация">
+            <div class="bc-navbar__links">
+                <a href="{{ url_for('home') }}#add-clothes" class="bc-navbar__link{% if active_page == 'home' %} is-active{% endif %}">Добави дреха</a>
+                <a href="{{ url_for('map_page') }}" class="bc-navbar__link{% if active_page == 'map' %} is-active{% endif %}">Дари</a>
+                <a href="{{ url_for('wardrobe') }}" class="bc-navbar__link{% if active_page == 'wardrobe' %} is-active{% endif %}">Гардероб</a>
+                <a href="{{ url_for('logout') }}" class="bc-navbar__link bc-navbar__link--logout">Изход</a>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<script>
+(function () {
+    var btn = document.getElementById('bcNavToggle');
+    var menu = document.getElementById('bcNavMenu');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', function () {
+        var open = menu.classList.toggle('is-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    menu.querySelectorAll('a').forEach(function (a) {
+        a.addEventListener('click', function () {
+            if (window.matchMedia('(max-width: 900px)').matches) {
+                menu.classList.remove('is-open');
+                btn.setAttribute('aria-expanded', 'false');
+            }
+        });
+    });
+})();
+</script>
