@@ -4,9 +4,9 @@
 # =============================================================================
 
 import os
-import sqlite3
 from datetime import date
 from functools import wraps
+from flask_sqlalchemy import SQLAlchemy
 
 from flask import (
     Flask,
@@ -25,15 +25,37 @@ from werkzeug.utils import secure_filename
 # -----------------------------------------------------------------------------
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:Silvester1@localhost:5432/BioClother"
 # Needed so Flask can sign session cookies (change this in a real deployment!)
 app.secret_key = "change-this-secret-key-for-production"
 # Reload HTML templates when you edit them (Flask otherwise caches them if DEBUG is off)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
+db = SQLAlchemy(app)
+
 # Where uploaded images are stored (inside static so the browser can load them)
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
-DATABASE = os.path.join(app.root_path, "database.db")
+
+
+# =============================================================================
+# Database models
+# =============================================================================
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    clothes = db.relationship("Clothes", backref="user", lazy=True, cascade="all, delete-orphan")
+
+
+class Clothes(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    image_path = db.Column(db.String(255), nullable=False)
+    type = db.Column(db.String(100), nullable=False)
+    color = db.Column(db.String(100), nullable=False)
+    last_worn_date = db.Column(db.String(10))  # ISO date format (YYYY-MM-DD)
 
 
 def allowed_file(filename):
@@ -44,52 +66,15 @@ def allowed_file(filename):
     return ext in ALLOWED_EXTENSIONS
 
 
-# -----------------------------------------------------------------------------
-# Database helpers (plain sqlite3 — no ORM)
-# -----------------------------------------------------------------------------
-
-
-def get_db():
-    """Open a connection to SQLite. 'row_factory' lets us use dict-like rows."""
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
-
+# =============================================================================
+# Database initialization
+# =============================================================================
 
 def init_db():
-    """
-    Create tables if they do not exist yet.
-    Runs once when the app starts (safe to call every time).
-    """
+    """Create tables if they do not exist yet."""
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    conn = get_db()
-    cur = conn.cursor()
-    # Users: one row per registered account
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
-        )
-        """
-    )
-    # Clothes: one row per clothing item; belongs to a user
-    cur.execute(
-        """
-        CREATE TABLE IF NOT EXISTS clothes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            image_path TEXT NOT NULL,
-            type TEXT NOT NULL,
-            color TEXT NOT NULL,
-            last_worn_date TEXT,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-        """
-    )
-    conn.commit()
-    conn.close()
+    with app.app_context():
+        db.create_all()
 
 
 def login_required(view):
@@ -124,20 +109,15 @@ def register():
         # Hash the password so we never store plain text in the database
         password_hash = generate_password_hash(password)
 
-        conn = get_db()
-        cur = conn.cursor()
         try:
-            cur.execute(
-                "INSERT INTO users (username, password) VALUES (?, ?)",
-                (username, password_hash),
-            )
-            conn.commit()
+            user = User(username=username, password=password_hash)
+            db.session.add(user)
+            db.session.commit()
             flash("Account created. You can log in now.", "success")
             return redirect(url_for("login"))
-        except sqlite3.IntegrityError:
+        except Exception:
+            db.session.rollback()
             flash("That username is already taken.", "danger")
-        finally:
-            conn.close()
 
     return render_template("register.html")
 
@@ -149,18 +129,11 @@ def login():
         username = (request.form.get("username") or "").strip()
         password = request.form.get("password") or ""
 
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT id, username, password FROM users WHERE username = ?",
-            (username,),
-        )
-        row = cur.fetchone()
-        conn.close()
+        user = User.query.filter_by(username=username).first()
 
-        if row and check_password_hash(row["password"], password):
-            session["user_id"] = row["id"]
-            session["username"] = row["username"]
+        if user and check_password_hash(user.password, password):
+            session["user_id"] = user.id
+            session["username"] = user.username
             flash("Welcome back!", "success")
             return redirect(url_for("home"))
 
@@ -234,51 +207,59 @@ def upload():
     # Path we store in DB — browser loads via /static/uploads/...
     db_path = f"uploads/{unique_name}"
 
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute(
-        """
-        INSERT INTO clothes (user_id, image_path, type, color, last_worn_date)
-        VALUES (?, ?, ?, ?, NULL)
-        """,
-        (session["user_id"], db_path, clothing_type, color),
-    )
-    conn.commit()
-    conn.close()
-
-    flash("Item saved to your wardrobe!", "success")
-    return redirect(url_for("wardrobe"))
+    try:
+        clothing = Clothes(
+            user_id=session["user_id"],
+            image_path=db_path,
+            type=clothing_type,
+            color=color,
+        )
+        db.session.add(clothing)
+        db.session.commit()
+        flash("Item saved to your wardrobe!", "success")
+        return redirect(url_for("wardrobe"))
+    except Exception:
+        db.session.rollback()
+        flash("Error saving item to database.", "danger")
+        return redirect(url_for("home"))
 
 
 @app.route("/wardrobe")
 @login_required
 def wardrobe():
     """
-    List all clothes for this user.
-    Sort: never worn first, then oldest last_worn_date first (SQLite: NULL sorts first in ASC).
+    List all clothes for this user, grouped by type.
+    Sort: never worn first, then oldest last_worn_date first.
     """
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT id, image_path, type, color, last_worn_date
-        FROM clothes
-        WHERE user_id = ?
-        ORDER BY last_worn_date ASC
-        """,
-        (session["user_id"],),
-    )
-    rows = cur.fetchall()
-    conn.close()
+    clothes_list = Clothes.query.filter_by(user_id=session["user_id"]).order_by(
+        Clothes.last_worn_date.asc()
+    ).all()
 
-    all_items = list(rows)
+    # Convert ORM objects to dictionaries for template
+    all_items = []
+    for item in clothes_list:
+        all_items.append({
+            'id': item.id,
+            'type': item.type,
+            'color': item.color,
+            'image_path': item.image_path,
+            'last_worn_date': item.last_worn_date,
+        })
+
+    # Group items by type (e.g. all "t-shirt" together)
+    grouped = {}
+    for item in clothes_list:
+        t = item.type
+        if t not in grouped:
+            grouped[t] = []
+        grouped[t].append(item)
 
     return render_template(
-        "wardrobe.html",
-        username=session.get("username"),
-        all_items=all_items,
-    )
-
+    "wardrobe.html",
+    username=session.get("username"),
+    grouped=grouped,
+    all_items=all_items,
+)
 
 @app.route("/mark_worn/<int:item_id>", methods=["POST"])
 @login_required
@@ -286,20 +267,14 @@ def mark_worn(item_id):
     """Set last_worn_date to today for one clothing row (only if it belongs to this user)."""
     today = date.today().isoformat()  # e.g. "2025-03-25"
 
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute(
-        """
-        UPDATE clothes
-        SET last_worn_date = ?
-        WHERE id = ? AND user_id = ?
-        """,
-        (today, item_id, session["user_id"]),
-    )
-    conn.commit()
-    conn.close()
+    item = Clothes.query.filter_by(id=item_id, user_id=session["user_id"]).first()
+    if item:
+        item.last_worn_date = today
+        db.session.commit()
+        flash("Marked as worn today!", "success")
+    else:
+        flash("Item not found.", "danger")
 
-    flash("Marked as worn today!", "success")
     return redirect(url_for("wardrobe"))
 
 
@@ -307,31 +282,21 @@ def mark_worn(item_id):
 @login_required
 def delete_item(item_id):
     """Remove one clothing row (and its image file) if it belongs to this user."""
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT image_path FROM clothes
-        WHERE id = ? AND user_id = ?
-        """,
-        (item_id, session["user_id"]),
-    )
-    row = cur.fetchone()
-    if row:
-        image_path = row["image_path"]
-        cur.execute(
-            "DELETE FROM clothes WHERE id = ? AND user_id = ?",
-            (item_id, session["user_id"]),
-        )
-        conn.commit()
-        full_path = os.path.join(app.root_path, "static", image_path)
+    item = Clothes.query.filter_by(id=item_id, user_id=session["user_id"]).first()
+    
+    if item:
+        # Delete the image file from disk
+        full_path = os.path.join(app.root_path, item.image_path)
         if os.path.isfile(full_path):
             try:
                 os.remove(full_path)
             except OSError:
                 pass
+        
+        db.session.delete(item)
+        db.session.commit()
         flash("Item removed from your wardrobe.", "success")
-    conn.close()
+    
     return redirect(url_for("wardrobe"))
 
 
