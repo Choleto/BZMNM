@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bio Clothes — Начало</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='mapstyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app_header.css') }}">
     <style>
         :root {
             --green-dark:  #1e6640;
@@ -355,20 +356,8 @@
     </style>
 </head>
 <body>
-    <nav class="site-header">
-        <div class="header-left">
-            <a href="{{ url_for('logout') }}" class="nav-link logout-btn">Изход (Logout)</a>
-        </div>
-        <div class="header-center">
-            <h1 class="logo">Bio Clothes</h1>
-        </div>
-        <div class="header-right">
-            <a href="{{ url_for('home') }}" class="nav-link active">Начало</a>
-            <a href="{{ url_for('wardrobe') }}" class="nav-link">Гардероб</a>
-            <a href="{{ url_for('map_page') }}" class="nav-link">Карта</a>
-            <span class="user-greeting">Здравей, {{ username }}!</span>
-        </div>
-    </nav>
+    {% set active_page = 'home' %}
+    {% include 'includes/app_header.html' %}
 
     <div class="page-body">
 
@@ -479,7 +468,7 @@
                 Добави дреха за дарение
             </div>
 
-            <form method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+            <form id="add-clothes" method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
                 <div class="add-wrap">
                     <label for="image" class="add-box" title="Добави снимка">
                         <img class="preview-img" id="image-preview" alt="">

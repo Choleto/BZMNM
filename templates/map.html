@@ -9,23 +9,12 @@
     <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.0.3/maptiler-sdk.css" rel="stylesheet" />
     
     <link rel="stylesheet" href="{{ url_for('static', filename='mapstyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app_header.css') }}">
 </head>
 <body>
 
-<nav class="site-header">
-    <div class="header-left">
-        <a href="{{ url_for('logout') }}" class="nav-link logout-btn">Изход (Logout)</a>
-    </div>
-    <div class="header-center">
-        <h1 class="logo">Bio Clothes</h1>
-    </div>
-    <div class="header-right">
-        <a href="{{ url_for('home') }}" class="nav-link">Начало</a>
-        <a href="{{ url_for('wardrobe') }}" class="nav-link">Гардероб</a>
-        <a href="{{ url_for('map_page') }}" class="nav-link active">Карта</a>
-        <span class="user-greeting">Здравей, {{ username }}!</span>
-    </div>
-</nav>
+{% set active_page = 'map' %}
+{% include 'includes/app_header.html' %}
 
 <div class="page-container">
     <header class="page-title">
