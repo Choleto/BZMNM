@@ -28,15 +28,17 @@
                     <h3 class="wardrobe-sidebar-heading">Дрехи</h3>
                     <ul class="wardrobe-cat-list">
                         <li><button type="button" class="wardrobe-cat-btn is-active" data-filter="All">Всички</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Shirts">Shirts</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Blouse">Blouses</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="T-shirts">T-shirts</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Jackets">Jackets</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Suit jackets">Suit jackets</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Pants">Pants</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Shorts">Shorts</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Hoodies">Hoodies</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Jeans">Jeans</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Shirt">Риза</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="T-shirt">Тениска</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Blouse">Блуза</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Hoodie">Худи</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Pants">Панталон</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Shorts">Къси панталони</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Dress">Рокля</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Jacket">Яке</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Shoes">Обувки</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Accessory">Аксесоар</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Other">Друго</button></li>
                     </ul>
                 </aside>
 
@@ -46,28 +48,51 @@
                     <div class="wardrobe-filters-bar">
                         <span>Филтри</span>
                         <span class="wardrobe-filters-hint muted small">Избери категория отляво, за да филтрираш.</span>
-                        <label class="wardrobe-sort-label" for="wardrobeSort">Подреди по дата на добавяне</label>
-                        <select id="wardrobeSort" class="wardrobe-sort-select" aria-label="Подреди по дата на добавяне">
-                            <option value="newest">От най-нова към най-стара</option>
-                            <option value="oldest">От най-стара към най-нова</option>
+                        <label class="wardrobe-sort-label" for="wardrobeSort">Подреди по носения</label>
+                        <select id="wardrobeSort" class="wardrobe-sort-select" aria-label="Подреди по носения">
+                            <option value="most_worn">Най-много носени</option>
+                            <option value="least_worn">Най-малко носени</option>
                         </select>
                     </div>
 
                     {% if not all_items %}
-                        <p class="wardrobe-empty">Все още няма дрехи. Използвай <strong>Добави нова+</strong> (или Начало), за да качиш снимка.</p>
+                        <p class="wardrobe-empty">Все още няма дрехи. Използвай <strong>Добави нова дреха</strong> (или Начало), за да качиш снимка.</p>
                     {% else %}
+                        {% set type_bg = {
+                            'Shirt': 'Риза',
+                            'T-shirt': 'Тениска',
+                            'Blouse': 'Блуза',
+                            'Hoodie': 'Худи',
+                            'Pants': 'Панталон',
+                            'Shorts': 'Къси панталони',
+                            'Dress': 'Рокля',
+                            'Jacket': 'Яке',
+                            'Shoes': 'Обувки',
+                            'Accessory': 'Аксесоар',
+                            'Other': 'Друго'
+                        } %}
                         <div class="wardrobe-grid" id="wardrobeGrid">
                             {% for item in all_items %}
+                                {% set t = item['type'] %}
+                                {% set title_bg = type_bg[t] if t in type_bg else t %}
                                 <article class="item-card" data-item-id="{{ item['id'] }}" data-item-type="{{ item['type']|e }}">
                                     <div class="item-card-image-wrap">
-                                        <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ item['type'] }}">
+                                        <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ title_bg }}">
                                     </div>
-                                    <p class="item-card-title">{{ item['type'] }}</p>
+                                    <p class="item-card-title">{{ title_bg }}</p>
                                     <form method="post" action="{{ url_for('delete_item', item_id=item['id']) }}" class="item-card-delete-form" onsubmit="return confirm('Да се премахне ли този артикул от гардероба?');">
                                         <button type="submit" class="btn-delete">Изтрий</button>
                                     </form>
-                                    <p class="item-card-detail small"><strong>Цвят:</strong> {{ item['color'] }}</p>
-                                    <p class="muted small">Последно носене: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}никога{% endif %}</p>
+                                    <p class="item-card-detail small item-card-color-row">
+                                        <strong>Цвят:</strong>
+                                        {% set col = item['color'] or '' %}
+                                        {% if col.startswith('#') and col|length >= 4 %}
+                                        <span class="item-color-swatch item-color-swatch--solo" style="background-color: {{ col|e }};" title=""></span>
+                                        {% else %}
+                                        <span class="item-color-text">{{ col|e }}</span>
+                                        {% endif %}
+                                    </p>
+                                    <p class="muted small">Последно носене: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}няма носена данни{% endif %}</p>
                                     <p class="small">Дата на добавяне: <span class="js-date-added" data-item-id="{{ item['id'] }}">—</span></p>
                                     <p class="item-times-worn small">Пъти носена: <span class="js-times" data-item-id="{{ item['id'] }}">0</span></p>
                                     <button type="button" class="btn-wore-it">Носих я</button>
@@ -167,37 +192,33 @@
 
         function matchesFilter(itemType, filter) {
             if (filter === 'All') return true;
-            var a = norm(itemType);
-            var b = norm(filter);
-            if (a === b) return true;
-            if (a.indexOf(b) !== -1 || b.indexOf(a) !== -1) return true;
-            return false;
+            return norm(itemType) === norm(filter);
         }
 
-        var activeFilter = 'All';
-
-        function getDateData() {
+        function getTimesData() {
             try {
-                var raw = localStorage.getItem(DATE_KEY);
+                var raw = localStorage.getItem(TIMES_KEY);
                 return raw ? JSON.parse(raw) : {};
             } catch (e) {
                 return {};
             }
         }
 
+        var activeFilter = 'All';
+
         function sortGrid() {
             var grid = document.getElementById('wardrobeGrid');
             var select = document.getElementById('wardrobeSort');
             if (!grid || !select) return;
-            var dates = getDateData();
+            var times = getTimesData();
             var cards = Array.prototype.slice.call(grid.querySelectorAll('.item-card'));
             cards.sort(function (a, b) {
                 var idA = a.getAttribute('data-item-id');
                 var idB = b.getAttribute('data-item-id');
-                var da = new Date(dates[idA] || '1970-01-01').getTime();
-                var db = new Date(dates[idB] || '1970-01-01').getTime();
-                if (select.value === 'newest') return db - da;
-                return da - db;
+                var ta = typeof times[idA] === 'number' ? times[idA] : 0;
+                var tb = typeof times[idB] === 'number' ? times[idB] : 0;
+                if (select.value === 'most_worn') return tb - ta;
+                return ta - tb;
             });
             for (var i = 0; i < cards.length; i++) {
                 grid.appendChild(cards[i]);
