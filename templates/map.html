@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Страница с карта: MapTiler + списък с пунктове за дарения -->
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
@@ -13,16 +14,18 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='app_header.css') }}">
 </head>
 <body>
-
+<!-- Активна страница за навигацията -->
 {% set active_page = 'map' %}
 {% include 'includes/app_header.html' %}
 
 <div class="page-container">
+    <!-- Заглавие и описание -->
     <header class="page-title">
         <h2>Национална мрежа за дарения</h2>
         <p>Намерете контейнери на БЧК и пунктове за дрехи в цяла България.</p>
     </header>
 
+    <!-- Търсене: извиква filterLocations() от mapscript.js при писане и при бутон -->
     <section class="search-section">
         <div class="search-box">
             <input type="text" id="addressSearch" placeholder="Търси град (София, Варна, Бургас...) или адрес..." oninput="filterLocations()">
@@ -31,6 +34,7 @@
     </section>
 
     <div class="main-layout">
+        <!-- Тук MapTiler рисува картата -->
         <div id="map"></div>
         
         <aside class="legend">
@@ -41,12 +45,14 @@
         </aside>
     </div>
 
+    <!-- Списъкът се пълни с JavaScript; #count е броят намерени места -->
     <section class="locations-list">
         <h3>Намерени локации (<span id="count">0</span>):</h3>
         <ul id="locationsUl"></ul>
     </section>
 </div>
 
+<!-- Логика за маркери, търсене и списък -->
 <script src="{{ url_for('static', filename='mapscript.js') }}"></script>
 </body>
 </html>

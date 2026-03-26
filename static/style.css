@@ -1,3 +1,4 @@
+/* Общи стилове: тесен контейнер за вход/регистрация, широк за гардероб, карти с дрехи, форми */
 .container {
     max-width: 480px;
     margin: 0 auto;
@@ -16,10 +17,12 @@
     font-size: 0.9rem;
 }
 
+/* Обвивка около страницата „Гардероб“ */
 .wardrobe-shell {
     margin-top: 1rem;
 }
 
+/* Две колони: странична лента с категории + основна зона */
 .wardrobe-columns {
     display: grid;
     grid-template-columns: 188px 1fr;
@@ -27,6 +30,7 @@
     align-items: start;
 }
 
+/* На тесен екран категориите отгоре, мрежата отдолу */
 @media (max-width: 720px) {
     .wardrobe-columns {
         grid-template-columns: 1fr;
@@ -209,6 +213,7 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
+/* Адаптивна мрежа от карти с дрехи */
 .wardrobe-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -287,6 +292,7 @@
     word-break: break-word;
 }
 
+/* Леко появяване на картите при зареждане */
 @keyframes wardrobe-card-in {
     from {
         opacity: 0;
@@ -467,7 +473,7 @@
     }
 }
 
-/* Cards & forms */
+/* Прости карти и полета за вход / регистрация */
 .card {
     background: #fff;
     border: 1px solid #ddd;
@@ -507,7 +513,7 @@ button:hover {
     background: #154a8c;
 }
 
-/* Flash messages */
+/* Съобщения от Flask (успех, грешка, предупреждение) */
 .flash-list {
     list-style: none;
     padding: 0;
@@ -563,6 +569,7 @@ button:hover {
     transform: scale(1.03);
 }
 
+/* Бутон „Носих я“ — вдига локален брояч и изпраща скрита форма към сървъра */
 .item-card--wardrobe .btn-wore-it {
     width: 100%;
     margin-top: 0.4rem;
@@ -582,6 +589,7 @@ button:hover {
     box-shadow: 0 6px 18px rgba(5, 150, 105, 0.45);
 }
 
+/* Скрита форма без видими полета — submit от JavaScript */
 .form-mark-worn-hidden {
     display: none;
 }

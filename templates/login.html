@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Страница за вход: изпраща POST към същия маршрут /login; при успех — сесия и redirect -->
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
@@ -23,6 +24,7 @@
             {% endif %}
         {% endwith %}
 
+        <!-- Полетата username и password се четат в app.py функция login() -->
         <form class="card" method="post" action="{{ url_for('login') }}">
             <h2>Вход</h2>
             <label for="username">Потребителско име</label>

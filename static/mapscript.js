@@ -1,8 +1,15 @@
+// Карта с MapTiler: показва пунктове за дарения и списък до картата.
+// Ключът за API е на MapTiler (външна услуга за картите).
 maptilersdk.config.apiKey = 'PZHz3sbrwnaTYiyd4GSK';
 
-var TYPE_LABELS = { container: 'Контейнер', agency: 'Агенция', event: 'Събитие' };
+// Как да се покаже типът на пункта на български (container/agency/event)
+var bulgarianNameForType = {
+    container: 'Контейнер',
+    agency: 'Агенция',
+    event: 'Събитие',
+};
 
-const donationPoints = [
+var donationPoints = [
     { name: "БЧК Контейнер - Младост 1", city: "София", address: "до блок 50", lat: 42.6560, lng: 23.3760, type: "container" },
     { name: "БЧК Контейнер - Младост 4", city: "София", address: "до Бизнес Парк София", lat: 42.6265, lng: 23.3762, type: "container" },
     { name: "БЧК Контейнер - Лозенец", city: "София", address: "ул. Кораб Планина 1", lat: 42.6730, lng: 23.3280, type: "container" },
@@ -75,70 +82,101 @@ const donationPoints = [
     { name: "БЧК Контейнер - Център", city: "Каварна", address: "ул. Добротица", lat: 43.4350, lng: 28.3380, type: "container" },
 ];
 
-const map = new maptilersdk.Map({
+// Създаване на картата: контейнер #map, стил улици, център България, мащаб 7
+var map = new maptilersdk.Map({
     container: 'map',
     style: maptilersdk.MapStyle.STREETS,
     center: [25.4858, 42.7339],
-    zoom: 7
+    zoom: 7,
 });
 
-let activeMarkers = [];
+// Тук пазим маркерите, за да можем да ги махнем преди да нарисуваме нови
+var markersOnMap = [];
 
-function renderUI(data) {
-    activeMarkers.forEach(m => m.remove());
-    activeMarkers = [];
+// Чисти старите маркери, пълни списъка и брояча, рисува маркери и редове за всяко място
+function showLocationsOnMap(places) {
+    var i;
+    for (i = 0; i < markersOnMap.length; i++) {
+        markersOnMap[i].remove();
+    }
+    markersOnMap = [];
 
-    const list = document.getElementById('locationsUl');
-    list.innerHTML = '';
+    var listElement = document.getElementById('locationsUl');
+    listElement.innerHTML = '';
 
-    const countSpan = document.getElementById('count');
-    if (countSpan) countSpan.innerText = data.length;
+    var countElement = document.getElementById('count');
+    if (countElement) {
+        countElement.innerText = places.length;
+    }
 
-    data.forEach(item => {
-        const el = document.createElement('div');
-        el.className = `marker ${item.type}`;
+    places.forEach(function (place) {
+        // Точка на картата с клас според типа (цвят от CSS .marker.*)
+        var markerDot = document.createElement('div');
+        markerDot.className = 'marker ' + place.type;
 
-        const marker = new maptilersdk.Marker({ element: el })
-            .setLngLat([item.lng, item.lat])
-            .setPopup(new maptilersdk.Popup({ offset: 10 })
-            .setHTML(`
-                <div style="font-family: sans-serif; font-size: 0.85rem;">
-                    <strong style="color: #333;">${item.name}</strong><br>
-                    <small>${item.address}</small>
-                </div>
-            `))
+        var popupHtml =
+            '<div style="font-family: sans-serif; font-size: 0.85rem;">' +
+            '<strong style="color: #333;">' +
+            place.name +
+            '</strong><br>' +
+            '<small>' +
+            place.address +
+            '</small></div>';
+
+        var oneMarker = new maptilersdk.Marker({ element: markerDot })
+            .setLngLat([place.lng, place.lat])
+            .setPopup(new maptilersdk.Popup({ offset: 10 }).setHTML(popupHtml))
             .addTo(map);
-        
-        activeMarkers.push(marker);
 
-        const li = document.createElement('li');
-        li.className = 'location-item';
+        markersOnMap.push(oneMarker);
 
-        li.innerHTML = `
-            <div class="location-text-group">
-                <strong style="color: #333;">${item.name}</strong>
-                <small style="color: #666;">${item.city}, ${item.address}</small>
-            </div>
-            <span class="type-tag ${item.type}">${TYPE_LABELS[item.type] || item.type}</span>
-        `;
-        
-        li.onclick = () => {
-            map.flyTo({ center: [item.lng, item.lat], zoom: 15 });
-            marker.togglePopup();
+        var tagText = bulgarianNameForType[place.type];
+        if (!tagText) {
+            tagText = place.type;
+        }
+
+        var listRow = document.createElement('li');
+        listRow.className = 'location-item';
+        listRow.innerHTML =
+            '<div class="location-text-group">' +
+            '<strong style="color: #333;">' +
+            place.name +
+            '</strong>' +
+            '<small style="color: #666;">' +
+            place.city +
+            ', ' +
+            place.address +
+            '</small></div>' +
+            '<span class="type-tag ' +
+            place.type +
+            '">' +
+            tagText +
+            '</span>';
+
+        // Клик върху реда: приближава картата и отваря балончето
+        listRow.onclick = function () {
+            map.flyTo({ center: [place.lng, place.lat], zoom: 15 });
+            oneMarker.togglePopup();
         };
-        list.appendChild(li);
+
+        listElement.appendChild(listRow);
     });
 }
 
+// Чете полето за търсене и оставя само места, където има съвпадение в град/име/адрес
 function filterLocations() {
-    var q = document.getElementById('addressSearch').value.toLowerCase();
-    renderUI(donationPoints.filter(function (p) {
-        return p.city.toLowerCase().indexOf(q) !== -1 ||
-            p.name.toLowerCase().indexOf(q) !== -1 ||
-            p.address.toLowerCase().indexOf(q) !== -1;
-    }));
+    var searchBox = document.getElementById('addressSearch');
+    var searchText = searchBox.value.toLowerCase();
+    var filteredPlaces = donationPoints.filter(function (place) {
+        var cityOk = place.city.toLowerCase().indexOf(searchText) !== -1;
+        var nameOk = place.name.toLowerCase().indexOf(searchText) !== -1;
+        var addressOk = place.address.toLowerCase().indexOf(searchText) !== -1;
+        return cityOk || nameOk || addressOk;
+    });
+    showLocationsOnMap(filteredPlaces);
 }
 
+// Когато картата е заредена, показваме всички пунктове
 map.on('load', function () {
-    renderUI(donationPoints);
+    showLocationsOnMap(donationPoints);
 });

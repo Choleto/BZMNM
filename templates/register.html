@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Регистрация: създава нов потребител в базата (паролата се хешира на сървъра) -->
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
@@ -23,6 +24,7 @@
             {% endif %}
         {% endwith %}
 
+        <!-- POST към register в app.py -->
         <form class="card" method="post" action="{{ url_for('register') }}">
             <h2>Регистрация</h2>
             <label for="username">Потребителско име</label>

@@ -1,5 +1,6 @@
-/* Bio Clothes — home page (templates/home.html) */
+/* Начална страница: двуколонен изглед — инфо панел + форма за качване (templates/home.html) */
 
+/* Цветове и общи променливи за тази страница */
 :root {
     --green-dark:  #1e6640;
     --green-mid:   #2d9157;
@@ -14,9 +15,9 @@
     --shadow-hover:0 6px 20px rgba(0,0,0,0.13);
 }
 
-/* page-shell.css sets body flex + background */
+/* page-shell.css задава flex на body и фона */
 
-/* ── PAGE BODY ── */
+/* Мрежа: ляво инфо, дясно форма */
 .page-body {
     flex: 1;
     display: grid;
@@ -37,7 +38,7 @@
     overflow: hidden;
 }
 
-/* subtle background blob */
+/* Леки декоративни кръгове на фона */
 .info-panel::before {
     content: "";
     position: absolute;
@@ -72,7 +73,7 @@
     max-width: 380px;
 }
 
-/* ── ILLUSTRATION CARDS ── */
+/* Карти с икони и кратък текст */
 .illus-grid {
     display: flex;
     flex-direction: column;
@@ -106,7 +107,7 @@
     opacity: 0.8;
 }
 
-/* ── STATS ROW ── */
+/* Ред с три „статистики“ (емоджита) */
 .stats-row {
     display: flex;
     gap: 1.5rem;
@@ -134,7 +135,7 @@
     letter-spacing: 0.05em;
 }
 
-/* ── RIGHT FORM PANEL ── */
+/* Десен панел: бяла област с формата */
 .form-panel {
     background: var(--surface);
     display: flex;
@@ -216,6 +217,7 @@
     font-weight: 500;
 }
 
+/* Скрито поле за файл; кликът се пренасочва към етикета .add-box */
 #image {
     position: absolute;
     width: 1px; height: 1px;
@@ -390,7 +392,7 @@ button[type="submit"]:hover {
 }
 button[type="submit"]:active { transform: scale(0.98); }
 
-/* ── RESPONSIVE ── */
+/* Тесен екран: една колона, формата под инфо панела */
 @media (max-width: 800px) {
     .page-body {
         grid-template-columns: 1fr;

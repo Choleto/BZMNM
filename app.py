@@ -1,11 +1,13 @@
 # =============================================================================
-# Bio Clothes — simple Flask app for beginners (Hackathon starter)
-# Run: python app.py
+# Bio Clothes — уеб приложение с Flask (стартов проект за хакатон)
+# Стартиране: python app.py
 # =============================================================================
+# Този файл е „сърцето“ на сървъра: връзка с база данни, страници и качване на снимки.
 
 import os
 from datetime import date
 
+# Външни библиотеки: Flask (уеб), SQLAlchemy (база), сигурност на пароли и файлове
 from dotenv import load_dotenv
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
@@ -24,12 +26,13 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 # -----------------------------------------------------------------------------
-# App setup
+# Настройка на приложението (Flask, база, папка за файлове)
 # -----------------------------------------------------------------------------
 
 load_dotenv()
 
 app = Flask(__name__)
+# Адресът на базата се чете от .env (променлива DATABASE_URL)
 database_url = os.environ.get("DATABASE_URL")
 if not database_url:
     raise RuntimeError(
@@ -37,26 +40,28 @@ if not database_url:
         "(e.g. DATABASE_URL=postgresql://user:password@localhost:5432/yourdb)."
     )
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-# Needed so Flask can sign session cookies (change this in a real deployment!)
+# Тайни ключ за подписани бисквитки (сесия); в продукция задължително сменете!
 app.secret_key = "change-this-secret-key-for-production"
-# Reload HTML templates when you edit them (Flask otherwise caches them if DEBUG is off)
+# При промяна на HTML шаблоните да се презареждат без рестарт
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 db = SQLAlchemy(app)
 
-# Where uploaded images are stored (inside static so the browser can load them)
+# Качените снимки се пазят тук; папката е под static/, за да се отварят в браузъра
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
+# Разрешени разширения за снимки
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
 
 # =============================================================================
-# Database models
+# Модели в базата (таблици: потребители и дрехи)
 # =============================================================================
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    # Един потребител има много дрехи; при изтриване на потребител — изтриват се и дрехите
     clothes = db.relationship("Clothes", backref="user", lazy=True, cascade="all, delete-orphan")
 
 
@@ -66,13 +71,13 @@ class Clothes(db.Model):
     image_path = db.Column(db.String(255), nullable=False)
     type = db.Column(db.String(100), nullable=False)
     color = db.Column(db.String(100), nullable=False)
-    last_worn_date = db.Column(db.String(10))  # ISO date format (YYYY-MM-DD)
-    # Spring / Summer / Fall / Winter from home form (optional)
+    last_worn_date = db.Column(db.String(10))  # Дата във формат YYYY-MM-DD
+    # Сезон от формата на началната страница: Spring / Summer / Fall / Winter (по избор)
     season = db.Column(db.String(20), nullable=True)
 
 
 def allowed_file(filename):
-    """Return True if the file has an allowed image extension."""
+    """Връща True, ако файлът е разрешено изображение (по разширение)."""
     if "." not in filename:
         return False
     ext = filename.rsplit(".", 1)[1].lower()
@@ -80,21 +85,20 @@ def allowed_file(filename):
 
 
 # =============================================================================
-# Database initialization
+# Създаване на таблици и миграции „на ръка“ за липсващи колони
 # =============================================================================
 
 def init_db():
-    """Create tables if they do not exist yet."""
+    """Създава таблиците в базата, ако още не съществуват."""
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     with app.app_context():
         db.create_all()
 
 
 def ensure_clothes_schema():
-    """Add columns that were added to the model after the DB was first created.
+    """Добавя колона season, ако таблицата clothes е стара, без тази колона.
 
-    db.create_all() only creates missing tables; it does not ALTER existing tables,
-    so queries fail with 500 if the code expects a column that is not in the DB.
+    create_all() създава само липсващи таблици; не променя стари таблици.
     """
     with app.app_context():
         inspector = inspect(db.engine)
@@ -108,7 +112,7 @@ def ensure_clothes_schema():
 
 
 def login_required(view):
-    """Decorator: only allow logged-in users to access a route."""
+    """Декоратор: страницата е достъпна само за влезли потребители."""
 
     @wraps(view)
     def wrapped(*args, **kwargs):
@@ -121,13 +125,13 @@ def login_required(view):
 
 
 # -----------------------------------------------------------------------------
-# Authentication routes
+# Маршрути: регистрация, вход, изход
 # -----------------------------------------------------------------------------
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    """Show registration form or create a new user."""
+    """Показва форма за регистрация или записва нов потребител."""
     if request.method == "POST":
         username = (request.form.get("username") or "").strip()
         password = request.form.get("password") or ""
@@ -136,7 +140,7 @@ def register():
             flash("Username and password are required.", "danger")
             return redirect(url_for("register"))
 
-        # Hash the password so we never store plain text in the database
+        # Паролата се хешира — в базата не се пази в видим текст
         password_hash = generate_password_hash(password)
 
         try:
@@ -154,7 +158,7 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """Show login form or start a session if credentials match."""
+    """Показва форма за вход или отваря сесия при верни данни."""
     if request.method == "POST":
         username = (request.form.get("username") or "").strip()
         password = request.form.get("password") or ""
@@ -174,20 +178,20 @@ def login():
 
 @app.route("/logout")
 def logout():
-    """Clear the session so the user is logged out."""
+    """Изчиства сесията — потребителят излиза от акаунта."""
     session.clear()
     flash("You are logged out.", "info")
     return redirect(url_for("login"))
 
 
 # -----------------------------------------------------------------------------
-# Main app pages (require login)
+# Основни страници (изискват вход)
 # -----------------------------------------------------------------------------
 
 
 @app.route("/")
 def index():
-    """Root URL: send logged-in users home, others to login."""
+    """Начален адрес /: влезли → начало, иначе → страница за вход."""
     if "user_id" in session:
         return redirect(url_for("home"))
     return redirect(url_for("login"))
@@ -196,7 +200,7 @@ def index():
 @app.route("/home")
 @login_required
 def home():
-    """Page to upload a new clothing item."""
+    """Начална страница: качване на нова дреха със снимка."""
     return render_template("home.html", username=session.get("username"))
 
 
@@ -204,8 +208,8 @@ def home():
 @login_required
 def upload():
     """
-    Receive the image + type + color from the home form.
-    Saves the file under static/uploads/ and inserts a row in 'clothes'.
+    Приема снимка + вид + цвят от формата на /home.
+    Записва файла в static/uploads/ и ред в таблицата clothes.
     """
     if "image" not in request.files:
         flash("No file part in the form.", "danger")
@@ -228,14 +232,14 @@ def upload():
         flash("Allowed formats: png, jpg, jpeg, gif, webp.", "danger")
         return redirect(url_for("home"))
 
-    # Safe filename (removes weird characters)
+    # Безопасно име на файл (без странни символи)
     filename = secure_filename(file.filename)
-    # Make sure two users cannot overwrite each other: prefix with user id + random bit
+    # Уникално име, за да не си презаписват файлове различни потребители
     unique_name = f"{session['user_id']}_{filename}"
     save_path = os.path.join(UPLOAD_FOLDER, unique_name)
     file.save(save_path)
 
-    # Path we store in DB — browser loads via /static/uploads/...
+    # Пътят в базата; браузърът зарежда чрез /static/uploads/...
     db_path = f"uploads/{unique_name}"
 
     try:
@@ -260,14 +264,14 @@ def upload():
 @login_required
 def wardrobe():
     """
-    List all clothes for this user, grouped by type.
-    Sort: never worn first, then oldest last_worn_date first.
+    Списък с дрехите на потребителя, групирани по вид.
+    Подредба от базата: първо неносени, после по дата на последно носене.
     """
     clothes_list = Clothes.query.filter_by(user_id=session["user_id"]).order_by(
         Clothes.last_worn_date.asc()
     ).all()
 
-    # Convert ORM objects to dictionaries for template
+    # За шаблона превръщаме обектите в речници (прости структури)
     all_items = []
     for item in clothes_list:
         all_items.append({
@@ -279,7 +283,7 @@ def wardrobe():
             'season': getattr(item, 'season', None) or '',
         })
 
-    # Group items by type (e.g. all "t-shirt" together)
+    # Групиране по вид дреха (напр. всички тениски заедно)
     grouped = {}
     for item in clothes_list:
         t = item.type
@@ -297,8 +301,8 @@ def wardrobe():
 @app.route("/mark_worn/<int:item_id>", methods=["POST"])
 @login_required
 def mark_worn(item_id):
-    """Set last_worn_date to today for one clothing row (only if it belongs to this user)."""
-    today = date.today().isoformat()  # e.g. "2025-03-25"
+    """Задава дата „последно носене“ на днес за една дреха (само ако е на този потребител)."""
+    today = date.today().isoformat()  # например "2025-03-25"
 
     item = Clothes.query.filter_by(id=item_id, user_id=session["user_id"]).first()
     if item:
@@ -314,11 +318,11 @@ def mark_worn(item_id):
 @app.route("/delete_item/<int:item_id>", methods=["POST"])
 @login_required
 def delete_item(item_id):
-    """Remove one clothing row (and its image file) if it belongs to this user."""
+    """Изтрива една дреха от базата и файла със снимката (ако е на този потребител)."""
     item = Clothes.query.filter_by(id=item_id, user_id=session["user_id"]).first()
     
     if item:
-        # Delete the image file from disk
+        # Премахва снимката от диска
         full_path = os.path.join(app.root_path, item.image_path)
         if os.path.isfile(full_path):
             try:
@@ -336,20 +340,19 @@ def delete_item(item_id):
 @app.route("/map")
 @login_required
 def map_page():
-    """Map page: MapTiler map + donation markers; static assets loaded via url_for in map.html."""
+    """Страница с карта (MapTiler) и пунктове за дарения; JS/CSS от map.html."""
     return render_template("map.html", username=session.get("username"))
 
 
 # -----------------------------------------------------------------------------
-# Run the development server
+# Стартиране на сървъра за разработка
 # -----------------------------------------------------------------------------
 
-# Create tables on import. Needed when you start the app with `flask run` —
-# that command does NOT run the `if __name__ == "__main__"` block, so without
-# this line you get "no such table: users" on register/login.
+# Таблиците се създават при импорт. Нужно е при `flask run`, защото тогава
+# не се изпълнява блокът if __name__ == "__main__" и иначе липсват таблици.
 init_db()
 ensure_clothes_schema()
 
 if __name__ == "__main__":
-    # debug=True is handy while learning; turn off in production
+    # debug=True е удобно при разработка; в продукция изключете
     app.run(debug=True, port=5000)

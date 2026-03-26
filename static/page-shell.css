@@ -1,6 +1,8 @@
-/* Shared page chrome — load on every page before other CSS */
+/* Общ изглед за всички страници: шрифт, нормализиране, body като колона.
+   Зареждайте този файл първи, преди останалите стилове. */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
+/* Единен box-model за всички елементи */
 *,
 *::before,
 *::after {
@@ -32,7 +34,7 @@ button {
         border-color 0.2s ease;
 }
 
-/* Main column fills viewport under the sticky header */
+/* Основното съдържание запълва височината под лепкавата лента */
 body > .container,
 body > .container.wide,
 body > .page-container,

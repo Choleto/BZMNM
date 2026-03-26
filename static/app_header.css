@@ -1,4 +1,4 @@
-/* Bio Clothes — shared navbar */
+/* Лента за навигация (обща за сайта): лого, връзки, мобилно меню */
 
 .bc-navbar {
     position: sticky;
@@ -144,6 +144,7 @@
     box-shadow: none !important;
 }
 
+/* Под 900px: хамбургер бутон и скрито меню до отваряне */
 @media (max-width: 900px) {
     .bc-navbar__toggle {
         display: flex;

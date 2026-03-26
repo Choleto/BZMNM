@@ -1,4 +1,4 @@
-{# active_page: home | wardrobe | map #}
+{# Коя страница е активна: home | wardrobe | map | login | register — за подчертаване в менюто #}
 <header class="bc-navbar" role="banner">
     <div class="bc-navbar__bar">
         <div class="bc-navbar__start">
@@ -28,22 +28,32 @@
     </div>
 </header>
 
+<!-- Скрипт: отваря/затваря мобилното меню и при клик на линк затваря менюто на малък екран -->
 <script>
 (function () {
-    var btn = document.getElementById('bcNavToggle');
-    var menu = document.getElementById('bcNavMenu');
-    if (!btn || !menu) return;
-    btn.addEventListener('click', function () {
-        var open = menu.classList.toggle('is-open');
-        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    var menuButton = document.getElementById('bcNavToggle');
+    var menuPanel = document.getElementById('bcNavMenu');
+    if (!menuButton || !menuPanel) {
+        return;
+    }
+    menuButton.addEventListener('click', function () {
+        var menuIsOpen = menuPanel.classList.toggle('is-open');
+        if (menuIsOpen) {
+            menuButton.setAttribute('aria-expanded', 'true');
+        } else {
+            menuButton.setAttribute('aria-expanded', 'false');
+        }
     });
-    menu.querySelectorAll('a').forEach(function (a) {
-        a.addEventListener('click', function () {
-            if (window.matchMedia('(max-width: 900px)').matches) {
-                menu.classList.remove('is-open');
-                btn.setAttribute('aria-expanded', 'false');
+    var links = menuPanel.querySelectorAll('a');
+    var i;
+    for (i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', function () {
+            var isSmallScreen = window.matchMedia('(max-width: 900px)').matches;
+            if (isSmallScreen) {
+                menuPanel.classList.remove('is-open');
+                menuButton.setAttribute('aria-expanded', 'false');
             }
         });
-    });
+    }
 })();
 </script>
