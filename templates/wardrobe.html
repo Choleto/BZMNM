@@ -27,38 +27,228 @@
             {% endif %}
         {% endwith %}
 
-        <h2>Your wardrobe</h2>
-        <p class="muted">Grouped by type. Never-worn items and oldest worn dates appear first.</p>
+        <div class="wardrobe-shell">
+            <header class="wardrobe-strip">
+                <span class="wardrobe-strip-title">wardrobe</span>
+                <a href="{{ url_for('map_page') }}" class="wardrobe-charity-link">charity map</a>
+            </header>
 
-        {% if not grouped %}
-            <p>No clothes yet. <a href="{{ url_for('home') }}">Add something on Home</a>.</p>
-        {% else %}
-            {% for clothing_type, items in grouped.items() %}
-                <section class="type-section">
-                    <h3>{{ clothing_type }}</h3>
-                    <div class="grid">
-                        {% for item in items %}
-                            <article class="item-card">
-                                <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ item['type'] }}">
-                                <p><strong>Type:</strong> {{ item['type'] }}</p>
-                                <p><strong>Color:</strong> {{ item['color'] }}</p>
-                                <p class="muted small">
-                                    Last worn:
-                                    {% if item['last_worn_date'] %}
-                                        {{ item['last_worn_date'] }}
-                                    {% else %}
-                                        never
-                                    {% endif %}
-                                </p>
-                                <form method="post" action="{{ url_for('mark_worn', item_id=item['id']) }}">
-                                    <button type="submit" class="btn-worn">👉 Worn today</button>
-                                </form>
-                            </article>
-                        {% endfor %}
+            <div class="wardrobe-columns">
+                <aside class="wardrobe-sidebar">
+                    <h3 class="wardrobe-sidebar-heading">Clothes</h3>
+                    <ul class="wardrobe-cat-list">
+                        <li><button type="button" class="wardrobe-cat-btn is-active" data-filter="All">All</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Shirts">Shirts</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="T-shirts">T-shirts</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Jackets">Jackets</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Suit jackets">Suit jackets</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Pants">Pants</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Shorts">Shorts</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Hoodies">Hoodies</button></li>
+                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Jeans">Jeans</button></li>
+                    </ul>
+                </aside>
+
+                <main class="wardrobe-main">
+                    <a href="{{ url_for('home') }}" class="wardrobe-add-link">Add new+</a>
+
+                    <div class="wardrobe-filters-bar">
+                        <span>Filters</span>
+                        <span class="wardrobe-filters-hint muted small">Pick a category on the left to filter.</span>
+                        <label class="wardrobe-sort-label" for="wardrobeSort">Sort by date added</label>
+                        <select id="wardrobeSort" class="wardrobe-sort-select" aria-label="Sort by date added">
+                            <option value="newest">Newest to oldest</option>
+                            <option value="oldest">Oldest to newest</option>
+                        </select>
                     </div>
-                </section>
-            {% endfor %}
-        {% endif %}
+
+                    {% if not all_items %}
+                        <p class="wardrobe-empty">No clothes yet. Use <strong>Add new+</strong> (or Home) to upload a photo.</p>
+                    {% else %}
+                        <div class="wardrobe-grid" id="wardrobeGrid">
+                            {% for item in all_items %}
+                                <article class="item-card" data-item-id="{{ item['id'] }}" data-item-type="{{ item['type']|e }}">
+                                    <div class="item-card-image-wrap">
+                                        <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ item['type'] }}">
+                                    </div>
+                                    <p class="item-card-title">{{ item['type'] }}</p>
+                                    <form method="post" action="{{ url_for('delete_item', item_id=item['id']) }}" class="item-card-delete-form" onsubmit="return confirm('Remove this item from your wardrobe?');">
+                                        <button type="submit" class="btn-delete">Delete</button>
+                                    </form>
+                                    <p class="item-card-detail small"><strong>Color:</strong> {{ item['color'] }}</p>
+                                    <p class="muted small">Last worn: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}never{% endif %}</p>
+                                    <p class="small">Date added: <span class="js-date-added" data-item-id="{{ item['id'] }}">—</span></p>
+                                    <p class="item-times-worn small">Times worn: <span class="js-times" data-item-id="{{ item['id'] }}">0</span></p>
+                                    <button type="button" class="btn-wore-it">Wore it</button>
+                                    <form method="post" action="{{ url_for('mark_worn', item_id=item['id']) }}" id="form-mark-worn-{{ item['id'] }}" class="form-mark-worn-hidden" aria-hidden="true"></form>
+                                </article>
+                            {% endfor %}
+                        </div>
+                        <p class="wardrobe-filter-empty muted" id="wardrobeFilterEmpty" hidden>No items match this category. Try <strong>All</strong> or a different label.</p>
+                    {% endif %}
+                </main>
+            </div>
+        </div>
     </div>
+
+    <script>
+    (function () {
+        var TIMES_KEY = 'wardrobeTimesWorn_v1';
+        var DATE_KEY = 'wardrobeDateAdded_v1';
+
+        function todayISO() {
+            var d = new Date();
+            var y = d.getFullYear();
+            var m = String(d.getMonth() + 1).padStart(2, '0');
+            var day = String(d.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + day;
+        }
+
+        function loadTimes() {
+            var raw = localStorage.getItem(TIMES_KEY);
+            var data = {};
+            try {
+                data = raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                data = {};
+            }
+            var spans = document.querySelectorAll('.js-times');
+            for (var i = 0; i < spans.length; i++) {
+                var id = spans[i].getAttribute('data-item-id');
+                var n = data[id];
+                spans[i].textContent = typeof n === 'number' ? n : 0;
+            }
+        }
+
+        function saveTime(itemId, n) {
+            var raw = localStorage.getItem(TIMES_KEY);
+            var data = {};
+            try {
+                data = raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                data = {};
+            }
+            data[String(itemId)] = n;
+            localStorage.setItem(TIMES_KEY, JSON.stringify(data));
+        }
+
+        // Remember a "date added" once per item (browser only — not in the database)
+        function loadDates() {
+            var raw = localStorage.getItem(DATE_KEY);
+            var data = {};
+            try {
+                data = raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                data = {};
+            }
+            var els = document.querySelectorAll('.js-date-added');
+            for (var i = 0; i < els.length; i++) {
+                var id = els[i].getAttribute('data-item-id');
+                if (!data[id]) {
+                    data[id] = todayISO();
+                    localStorage.setItem(DATE_KEY, JSON.stringify(data));
+                }
+                els[i].textContent = data[id];
+            }
+        }
+
+        document.addEventListener('click', function (ev) {
+            var btn = ev.target.closest('.btn-wore-it');
+            if (!btn) return;
+            var card = btn.closest('.item-card');
+            if (!card) return;
+            var span = card.querySelector('.js-times');
+            if (!span) return;
+            var itemId = span.getAttribute('data-item-id');
+            var cur = parseInt(span.textContent, 10);
+            if (isNaN(cur)) cur = 0;
+            var next = cur + 1;
+            span.textContent = String(next);
+            saveTime(itemId, next);
+            var form = document.getElementById('form-mark-worn-' + itemId);
+            if (form) form.submit();
+        });
+
+        // --- Sidebar: show only cards that match the category (simple text match) ---
+        function norm(s) {
+            return (s || '').toLowerCase().trim();
+        }
+
+        function matchesFilter(itemType, filter) {
+            if (filter === 'All') return true;
+            var a = norm(itemType);
+            var b = norm(filter);
+            if (a === b) return true;
+            if (a.indexOf(b) !== -1 || b.indexOf(a) !== -1) return true;
+            return false;
+        }
+
+        var activeFilter = 'All';
+
+        function getDateData() {
+            try {
+                var raw = localStorage.getItem(DATE_KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function sortGrid() {
+            var grid = document.getElementById('wardrobeGrid');
+            var select = document.getElementById('wardrobeSort');
+            if (!grid || !select) return;
+            var dates = getDateData();
+            var cards = Array.prototype.slice.call(grid.querySelectorAll('.item-card'));
+            cards.sort(function (a, b) {
+                var idA = a.getAttribute('data-item-id');
+                var idB = b.getAttribute('data-item-id');
+                var da = new Date(dates[idA] || '1970-01-01').getTime();
+                var db = new Date(dates[idB] || '1970-01-01').getTime();
+                if (select.value === 'newest') return db - da;
+                return da - db;
+            });
+            for (var i = 0; i < cards.length; i++) {
+                grid.appendChild(cards[i]);
+            }
+        }
+
+        function applyCategoryFilter() {
+            var cards = document.querySelectorAll('#wardrobeGrid .item-card');
+            var anyShown = false;
+            for (var i = 0; i < cards.length; i++) {
+                var t = cards[i].getAttribute('data-item-type') || '';
+                var show = matchesFilter(t, activeFilter);
+                cards[i].style.display = show ? '' : 'none';
+                if (show) anyShown = true;
+            }
+            var msg = document.getElementById('wardrobeFilterEmpty');
+            if (msg) msg.hidden = anyShown;
+        }
+
+        document.querySelectorAll('.wardrobe-cat-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                activeFilter = btn.getAttribute('data-filter') || 'All';
+                document.querySelectorAll('.wardrobe-cat-btn').forEach(function (b) {
+                    b.classList.toggle('is-active', b === btn);
+                });
+                applyCategoryFilter();
+            });
+        });
+
+        var sortSelect = document.getElementById('wardrobeSort');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', function () {
+                sortGrid();
+                applyCategoryFilter();
+            });
+        }
+
+        loadTimes();
+        loadDates();
+        sortGrid();
+        applyCategoryFilter();
+    })();
+    </script>
 </body>
 </html>

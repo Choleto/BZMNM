@@ -18,7 +18,7 @@ body {
 }
 
 .container.wide {
-    max-width: 960px;
+    max-width: 1100px;
 }
 
 h1 {
@@ -56,6 +56,190 @@ h1 {
 
 .top-nav a:hover {
     text-decoration: underline;
+}
+
+/* Wardrobe page layout (wireframe: strip + sidebar + main grid) */
+.wardrobe-shell {
+    margin-top: 0.5rem;
+}
+
+.wardrobe-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: #e8eaed;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.25rem;
+}
+
+.wardrobe-strip-title {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+}
+
+.wardrobe-charity-link {
+    position: absolute;
+    right: 1rem;
+    font-size: 0.9rem;
+    color: #1a5fb4;
+    text-decoration: none;
+}
+
+.wardrobe-charity-link:hover {
+    text-decoration: underline;
+}
+
+.wardrobe-columns {
+    display: grid;
+    grid-template-columns: 168px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 720px) {
+    .wardrobe-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wardrobe-sidebar-heading {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+}
+
+.wardrobe-cat-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.wardrobe-cat-list li {
+    margin: 0;
+}
+
+.wardrobe-cat-btn {
+    width: 100%;
+    text-align: left;
+    padding: 0.4rem 0.5rem;
+    margin: 0 0 0.25rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    color: #222;
+}
+
+.wardrobe-cat-btn:hover {
+    background: #e8eaed;
+}
+
+.wardrobe-cat-btn.is-active {
+    background: #dce8f7;
+    border-color: #b8d0ef;
+    font-weight: 600;
+}
+
+.wardrobe-main {
+    min-width: 0;
+}
+
+.wardrobe-add-link {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    color: #1a5fb4;
+    text-decoration: underline;
+    font-size: 1rem;
+}
+
+.wardrobe-add-link:hover {
+    color: #154a8c;
+}
+
+.wardrobe-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    background: #e8eaed;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.wardrobe-filters-hint {
+    margin: 0;
+}
+
+.wardrobe-filters-bar .wardrobe-sort-label {
+    display: inline-block;
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.wardrobe-sort-select {
+    margin: 0;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font: inherit;
+    background: #fff;
+}
+
+.wardrobe-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 900px) {
+    .wardrobe-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 520px) {
+    .wardrobe-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.wardrobe-empty {
+    margin: 0.5rem 0 0;
+}
+
+.wardrobe-filter-empty {
+    margin-top: 0.75rem;
+}
+
+.item-card-title {
+    font-weight: 600;
+    margin: 0.35rem 0 0.25rem;
+    text-transform: capitalize;
+}
+
+.item-card-detail {
+    margin: 0.25rem 0;
+}
+
+.item-card-image-wrap {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #ddd;
+}
+
+.item-card-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 /* Cards & forms */
@@ -153,17 +337,41 @@ button:hover {
     padding: 0.75rem;
 }
 
-.item-card img {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 4px;
-    background: #eee;
-}
-
 .btn-worn {
     width: 100%;
     margin-top: 0.5rem;
+}
+
+/* Wardrobe cards: delete under photo, wore-it button */
+.item-card-delete-form {
+    margin: 0.35rem 0 0.5rem;
+}
+
+.item-card .btn-delete {
+    width: 100%;
+    margin-top: 0;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.95rem;
+    background: #fff;
+    color: #a40000;
+    border: 1px solid #e0a0a0;
+}
+
+.item-card .btn-delete:hover {
+    background: #fff5f5;
+}
+
+.item-times-worn {
+    margin: 0.5rem 0 0.25rem;
+}
+
+.item-card .btn-wore-it {
+    width: 100%;
+    margin-top: 0.35rem;
+}
+
+.form-mark-worn-hidden {
+    display: none;
 }
 
 /* Leaflet map box */

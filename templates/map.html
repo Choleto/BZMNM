@@ -8,22 +8,22 @@
     <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.0.3/maptiler-sdk.umd.min.js"></script>
     <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.0.3/maptiler-sdk.css" rel="stylesheet" />
     
-    <link rel="stylesheet" href="mapstyle.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mapstyle.css') }}">
 </head>
 <body>
 
 <nav class="site-header">
     <div class="header-left">
-        <a href="#" class="nav-link logout-btn">Изход (Logout)</a>
+        <a href="{{ url_for('logout') }}" class="nav-link logout-btn">Изход (Logout)</a>
     </div>
     <div class="header-center">
         <h1 class="logo">Bio Clothes</h1>
     </div>
     <div class="header-right">
-        <a href="home.html" class="nav-link">Начало</a>
-        <a href="wardrobe.html" class="nav-link">Гардероб</a>
-        <a href="map.html" class="nav-link active">Карта</a>
-        <span class="user-greeting">Здравей, Petar!</span>
+        <a href="{{ url_for('home') }}" class="nav-link">Начало</a>
+        <a href="{{ url_for('wardrobe') }}" class="nav-link">Гардероб</a>
+        <a href="{{ url_for('map_page') }}" class="nav-link active">Карта</a>
+        <span class="user-greeting">Здравей, {{ username }}!</span>
     </div>
 </nav>
 
@@ -57,6 +57,6 @@
     </section>
 </div>
 
-<script src="mapscript.js"></script>
+<script src="{{ url_for('static', filename='mapscript.js') }}"></script>
 </body>
 </html>

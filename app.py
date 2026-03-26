@@ -252,7 +252,7 @@ def upload():
 @login_required
 def wardrobe():
     """
-    List all clothes for this user, grouped by type.
+    List all clothes for this user.
     Sort: never worn first, then oldest last_worn_date first (SQLite: NULL sorts first in ASC).
     """
     conn = get_db()
@@ -269,18 +269,12 @@ def wardrobe():
     rows = cur.fetchall()
     conn.close()
 
-    # Group items by type (e.g. all "t-shirt" together)
-    grouped = {}
-    for row in rows:
-        t = row["type"]
-        if t not in grouped:
-            grouped[t] = []
-        grouped[t].append(row)
+    all_items = list(rows)
 
     return render_template(
         "wardrobe.html",
         username=session.get("username"),
-        grouped=grouped,
+        all_items=all_items,
     )
 
 
@@ -307,10 +301,42 @@ def mark_worn(item_id):
     return redirect(url_for("wardrobe"))
 
 
+@app.route("/delete_item/<int:item_id>", methods=["POST"])
+@login_required
+def delete_item(item_id):
+    """Remove one clothing row (and its image file) if it belongs to this user."""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT image_path FROM clothes
+        WHERE id = ? AND user_id = ?
+        """,
+        (item_id, session["user_id"]),
+    )
+    row = cur.fetchone()
+    if row:
+        image_path = row["image_path"]
+        cur.execute(
+            "DELETE FROM clothes WHERE id = ? AND user_id = ?",
+            (item_id, session["user_id"]),
+        )
+        conn.commit()
+        full_path = os.path.join(app.root_path, "static", image_path)
+        if os.path.isfile(full_path):
+            try:
+                os.remove(full_path)
+            except OSError:
+                pass
+        flash("Item removed from your wardrobe.", "success")
+    conn.close()
+    return redirect(url_for("wardrobe"))
+
+
 @app.route("/map")
 @login_required
 def map_page():
-    """Simple map page with hardcoded donation markers (Leaflet + OpenStreetMap)."""
+    """Map page: MapTiler map + donation markers; static assets loaded via url_for in map.html."""
     return render_template("map.html", username=session.get("username"))
 
 
