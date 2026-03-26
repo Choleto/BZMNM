@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio Clothes — Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container wide">
+        <nav class="top-nav">
+            <strong>Bio Clothes</strong>
+            <span class="muted">Hi, {{ username }}</span>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('wardrobe') }}">Wardrobe</a>
+            <a href="{{ url_for('map_page') }}">Map</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-list">
+                    {% for category, message in messages %}
+                        <li class="flash flash-{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <h2>Add clothing</h2>
+        <p class="muted">Upload a photo and describe the item. It will appear on your wardrobe page.</p>
+
+        <form class="card" method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+            <label for="image">Image from your computer</label>
+            <input type="file" id="image" name="image" accept="image/*" required>
+
+            <label for="type">Clothing type</label>
+            <input type="text" id="type" name="type" placeholder="e.g. t-shirt, hoodie, hat" required>
+
+            <label for="color">Color</label>
+            <input type="text" id="color" name="color" placeholder="e.g. blue, red" required>
+
+            <button type="submit">Save to wardrobe</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio Clothes — Wardrobe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container wide">
+        <nav class="top-nav">
+            <strong>Bio Clothes</strong>
+            <span class="muted">Hi, {{ username }}</span>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('wardrobe') }}">Wardrobe</a>
+            <a href="{{ url_for('map_page') }}">Map</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-list">
+                    {% for category, message in messages %}
+                        <li class="flash flash-{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <h2>Your wardrobe</h2>
+        <p class="muted">Grouped by type. Never-worn items and oldest worn dates appear first.</p>
+
+        {% if not grouped %}
+            <p>No clothes yet. <a href="{{ url_for('home') }}">Add something on Home</a>.</p>
+        {% else %}
+            {% for clothing_type, items in grouped.items() %}
+                <section class="type-section">
+                    <h3>{{ clothing_type }}</h3>
+                    <div class="grid">
+                        {% for item in items %}
+                            <article class="item-card">
+                                <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ item['type'] }}">
+                                <p><strong>Type:</strong> {{ item['type'] }}</p>
+                                <p><strong>Color:</strong> {{ item['color'] }}</p>
+                                <p class="muted small">
+                                    Last worn:
+                                    {% if item['last_worn_date'] %}
+                                        {{ item['last_worn_date'] }}
+                                    {% else %}
+                                        never
+                                    {% endif %}
+                                </p>
+                                <form method="post" action="{{ url_for('mark_worn', item_id=item['id']) }}">
+                                    <button type="submit" class="btn-worn">👉 Worn today</button>
+                                </form>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
+        {% endif %}
+    </div>
+</body>
+</html>
