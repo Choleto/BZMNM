@@ -1,34 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bg">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio Clothes — Donation map</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossorigin="">
+    <title>Bio Clothes - MapTiler Edition</title>
+    
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.0.3/maptiler-sdk.umd.min.js"></script>
+    <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.0.3/maptiler-sdk.css" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="mapstyle.css">
 </head>
 <body>
-    <div class="container wide">
-        <nav class="top-nav">
-            <strong>Bio Clothes</strong>
-            <span class="muted">Hi, {{ username }}</span>
-            <a href="{{ url_for('home') }}">Home</a>
-            <a href="{{ url_for('wardrobe') }}">Wardrobe</a>
-            <a href="{{ url_for('map_page') }}">Map</a>
-            <a href="{{ url_for('logout') }}">Logout</a>
-        </nav>
 
-        <h2>Donation locations</h2>
-        <p class="muted">Example places (hardcoded). You can change coordinates later in <code>map.html</code>.</p>
-
-        <div id="map"></div>
-
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-                crossorigin=""></script>
-        <script src="{{ url_for('static', filename='script.js') }}"></script>
+<nav class="site-header">
+    <div class="header-left">
+        <a href="#" class="nav-link logout-btn">Изход (Logout)</a>
     </div>
+    <div class="header-center">
+        <h1 class="logo">Bio Clothes</h1>
+    </div>
+    <div class="header-right">
+        <a href="home.html" class="nav-link">Начало</a>
+        <a href="wardrobe.html" class="nav-link">Гардероб</a>
+        <a href="map.html" class="nav-link active">Карта</a>
+        <span class="user-greeting">Здравей, Petar!</span>
+    </div>
+</nav>
+
+<div class="container">
+    <header class="page-title">
+        <h2>Национална мрежа за дарения</h2>
+        <p>Намерете контейнери на БЧК и пунктове за дрехи в цяла България.</p>
+    </header>
+
+    <section class="search-section">
+        <div class="search-box">
+            <input type="text" id="addressSearch" placeholder="Търси град (София, Варна, Бургас...) или адрес..." oninput="filterLocations()">
+            <button onclick="filterLocations()">Търси</button>
+        </div>
+    </section>
+
+    <div class="main-layout">
+        <div id="map"></div>
+        
+        <aside class="legend">
+            <h3>Легенда</h3>
+            <div class="legend-item"><span class="dot red"></span> Контейнер БЧК</div>
+            <div class="legend-item"><span class="dot green"></span> Агенция</div>
+            <div class="legend-item"><span class="dot blue"></span> Събитие</div>
+        </aside>
+    </div>
+
+    <section class="locations-list">
+        <h3>Намерени локации (<span id="count">0</span>):</h3>
+        <ul id="locationsUl"></ul>
+    </section>
+</div>
+
+<script src="mapscript.js"></script>
 </body>
 </html>
