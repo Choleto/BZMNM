@@ -44,20 +44,35 @@
                 </aside>
 
                 <main class="wardrobe-main">
-                    <a href="{{ url_for('home') }}" class="wardrobe-add-link">Добави нова+</a>
-
-                    <div class="wardrobe-filters-bar">
-                        <span>Филтри</span>
-                        <span class="wardrobe-filters-hint muted small">Избери категория отляво, за да филтрираш.</span>
-                        <label class="wardrobe-sort-label" for="wardrobeSort">Подреди по носения</label>
-                        <select id="wardrobeSort" class="wardrobe-sort-select" aria-label="Подреди по носения">
-                            <option value="most_worn">Най-много носени</option>
-                            <option value="least_worn">Най-малко носени</option>
-                        </select>
+                    <div class="wardrobe-toolbar-row">
+                        <a href="{{ url_for('home') }}" class="wardrobe-add-link">Добави нова+</a>
+                        <a href="{{ url_for('map_page') }}" class="btn-donate-clothes" title="Карта на пунктове за дарения">Дари дреха</a>
                     </div>
 
+                    {% if all_items %}
+                    <div class="wardrobe-controls" role="region" aria-label="Филтър и подредба">
+                        <div class="wardrobe-controls__text">
+                            <span class="wardrobe-controls__title">Филтър и подредба</span>
+                            <span class="wardrobe-controls__hint muted">Категория отляво · подредба тук</span>
+                        </div>
+                        <div class="wardrobe-controls__sort">
+                            <label class="wardrobe-sort-label" for="wardrobeSort">Подреди</label>
+                            <select id="wardrobeSort" class="wardrobe-sort-select" aria-label="Подреди артикулите">
+                                <option value="most_worn">Най-много носени</option>
+                                <option value="least_worn">Най-малко носени</option>
+                                <option value="season_order">По сезон: Пролет → Лято → Есен → Зима</option>
+                            </select>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     {% if not all_items %}
-                        <p class="wardrobe-empty">Все още няма дрехи. Използвай <strong>Добави нова дреха</strong> (или Начало), за да качиш снимка.</p>
+                        <div class="wardrobe-empty-state">
+                            <div class="wardrobe-empty-state__icon" aria-hidden="true">👕</div>
+                            <h2 class="wardrobe-empty-state__title">Гардеробът е празен</h2>
+                            <p class="wardrobe-empty-state__text">Добави първата си дреха от началната страница — качи снимка и започни да следиш носенията.</p>
+                            <a href="{{ url_for('home') }}" class="wardrobe-add-link wardrobe-add-link--large">Добави първа дреха</a>
+                        </div>
                     {% else %}
                         {% set type_bg = {
                             'Shirt': 'Риза',
@@ -72,15 +87,37 @@
                             'Accessory': 'Аксесоар',
                             'Other': 'Друго'
                         } %}
+                        {% set season_bg = {
+                            'Spring': 'Пролет',
+                            'Summer': 'Лято',
+                            'Fall': 'Есен',
+                            'Winter': 'Зима'
+                        } %}
+                        {% set season_theme = {
+                            'Spring': 'spring',
+                            'Summer': 'summer',
+                            'Fall': 'fall',
+                            'Winter': 'winter'
+                        } %}
                         <div class="wardrobe-grid" id="wardrobeGrid">
                             {% for item in all_items %}
                                 {% set t = item['type'] %}
                                 {% set title_bg = type_bg[t] if t in type_bg else t %}
-                                <article class="item-card" data-item-id="{{ item['id'] }}" data-item-type="{{ item['type']|e }}">
+                                {% set se = item['season'] or '' %}
+                                <article class="item-card item-card--wardrobe" style="--card-i: {{ loop.index0 }}" data-item-id="{{ item['id'] }}" data-item-type="{{ item['type']|e }}" data-season="{{ se|e }}">
                                     <div class="item-card-image-wrap">
-                                        <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ title_bg }}">
+                                        <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ title_bg }}" loading="lazy">
                                     </div>
-                                    <p class="item-card-title">{{ title_bg }}</p>
+                                    <div class="item-card-season-strip item-card-season-strip--{{ season_theme[se] if se in season_theme else 'unset' }}" role="group" aria-label="Сезон">
+                                        <span class="item-card-season-label">Сезон:</span>
+                                        {% if se and se in season_bg %}
+                                        <span class="item-card-season-value">{{ season_bg[se] }}</span>
+                                        {% else %}
+                                        <span class="item-card-season-value item-card-season-value--empty">Не е зададен</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="item-card-body">
+                                    <h3 class="item-card-title">{{ title_bg }}</h3>
                                     <form method="post" action="{{ url_for('delete_item', item_id=item['id']) }}" class="item-card-delete-form" onsubmit="return confirm('Да се премахне ли този артикул от гардероба?');">
                                         <button type="submit" class="btn-delete">Изтрий</button>
                                     </form>
@@ -93,11 +130,17 @@
                                         <span class="item-color-text">{{ col|e }}</span>
                                         {% endif %}
                                     </p>
-                                    <p class="muted small">Последно носене: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}няма носена данни{% endif %}</p>
+                                    <p class="muted small">Последно носене: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}няма данни{% endif %}</p>
                                     <p class="small">Дата на добавяне: <span class="js-date-added" data-item-id="{{ item['id'] }}">—</span></p>
-                                    <p class="item-times-worn small">Пъти носена: <span class="js-times" data-item-id="{{ item['id'] }}">0</span></p>
+                                    <p class="item-worn-stat" aria-live="polite">
+                                        <span class="item-worn-stat__icon" aria-hidden="true">👕</span>
+                                        <span class="item-worn-stat__label">Носена:</span>
+                                        <span class="item-worn-stat__num js-times" data-item-id="{{ item['id'] }}">0</span>
+                                        <span class="item-worn-stat__suffix">пъти</span>
+                                    </p>
                                     <button type="button" class="btn-wore-it">Носих я</button>
                                     <form method="post" action="{{ url_for('mark_worn', item_id=item['id']) }}" id="form-mark-worn-{{ item['id'] }}" class="form-mark-worn-hidden" aria-hidden="true"></form>
+                                    </div>
                                 </article>
                             {% endfor %}
                         </div>
@@ -207,18 +250,35 @@
 
         var activeFilter = 'All';
 
+        function seasonRank(season) {
+            var order = { Spring: 0, Summer: 1, Fall: 2, Winter: 3 };
+            var s = (season || '').trim();
+            if (!s || order[s] === undefined) return 999;
+            return order[s];
+        }
+
         function sortGrid() {
             var grid = document.getElementById('wardrobeGrid');
             var select = document.getElementById('wardrobeSort');
             if (!grid || !select) return;
             var times = getTimesData();
+            var mode = select.value;
             var cards = Array.prototype.slice.call(grid.querySelectorAll('.item-card'));
             cards.sort(function (a, b) {
                 var idA = a.getAttribute('data-item-id');
                 var idB = b.getAttribute('data-item-id');
+                if (mode === 'season_order') {
+                    var ra = seasonRank(a.getAttribute('data-season'));
+                    var rb = seasonRank(b.getAttribute('data-season'));
+                    if (ra !== rb) return ra - rb;
+                    var na = parseInt(idA, 10);
+                    var nb = parseInt(idB, 10);
+                    if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+                    return 0;
+                }
                 var ta = typeof times[idA] === 'number' ? times[idA] : 0;
                 var tb = typeof times[idB] === 'number' ? times[idB] : 0;
-                if (select.value === 'most_worn') return tb - ta;
+                if (mode === 'most_worn') return tb - ta;
                 return ta - tb;
             });
             for (var i = 0; i < cards.length; i++) {

@@ -1,13 +1,16 @@
 {# active_page: home | wardrobe | map #}
 <header class="bc-navbar" role="banner">
     <div class="bc-navbar__bar">
-        <button type="button" class="bc-navbar__toggle" id="bcNavToggle" aria-expanded="false" aria-controls="bcNavMenu" aria-label="Отвори менюто">
-            <span class="bc-navbar__toggle-line"></span>
-            <span class="bc-navbar__toggle-line"></span>
-            <span class="bc-navbar__toggle-line"></span>
-        </button>
+        <div class="bc-navbar__start">
+            <button type="button" class="bc-navbar__toggle" id="bcNavToggle" aria-expanded="false" aria-controls="bcNavMenu" aria-label="Отвори менюто">
+                <span class="bc-navbar__toggle-line"></span>
+                <span class="bc-navbar__toggle-line"></span>
+                <span class="bc-navbar__toggle-line"></span>
+            </button>
+            <a href="{% if session.get('user_id') %}{{ url_for('home') }}{% else %}{{ url_for('login') }}{% endif %}" class="bc-navbar__logo" title="Начало" aria-label="Начало">👕</a>
+        </div>
 
-        <a href="{% if session.get('user_id') %}{{ url_for('home') }}{% else %}{{ url_for('login') }}{% endif %}" class="bc-navbar__brand">Bio Clother</a>
+        <a href="{% if session.get('user_id') %}{{ url_for('home') }}{% else %}{{ url_for('login') }}{% endif %}" class="bc-navbar__brand">Bio Clothes</a>
 
         <nav class="bc-navbar__menu" id="bcNavMenu" aria-label="Основна навигация">
             <div class="bc-navbar__links">

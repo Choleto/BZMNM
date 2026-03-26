@@ -9,6 +9,7 @@ from datetime import date
 from dotenv import load_dotenv
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect, text
 
 from flask import (
     Flask,
@@ -66,6 +67,8 @@ class Clothes(db.Model):
     type = db.Column(db.String(100), nullable=False)
     color = db.Column(db.String(100), nullable=False)
     last_worn_date = db.Column(db.String(10))  # ISO date format (YYYY-MM-DD)
+    # Spring / Summer / Fall / Winter from home form (optional)
+    season = db.Column(db.String(20), nullable=True)
 
 
 def allowed_file(filename):
@@ -85,6 +88,23 @@ def init_db():
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     with app.app_context():
         db.create_all()
+
+
+def ensure_clothes_schema():
+    """Add columns that were added to the model after the DB was first created.
+
+    db.create_all() only creates missing tables; it does not ALTER existing tables,
+    so queries fail with 500 if the code expects a column that is not in the DB.
+    """
+    with app.app_context():
+        inspector = inspect(db.engine)
+        if "clothes" not in inspector.get_table_names():
+            return
+        col_names = {c["name"] for c in inspector.get_columns("clothes")}
+        if "season" in col_names:
+            return
+        db.session.execute(text("ALTER TABLE clothes ADD COLUMN season VARCHAR(20)"))
+        db.session.commit()
 
 
 def login_required(view):
@@ -194,6 +214,7 @@ def upload():
     file = request.files["image"]
     clothing_type = (request.form.get("type") or "").strip()
     color = (request.form.get("color") or "").strip()
+    season = (request.form.get("season") or "").strip() or None
 
     if file.filename == "":
         flash("Please choose an image file.", "danger")
@@ -223,6 +244,7 @@ def upload():
             image_path=db_path,
             type=clothing_type,
             color=color,
+            season=season,
         )
         db.session.add(clothing)
         db.session.commit()
@@ -254,6 +276,7 @@ def wardrobe():
             'color': item.color,
             'image_path': item.image_path,
             'last_worn_date': item.last_worn_date,
+            'season': getattr(item, 'season', None) or '',
         })
 
     # Group items by type (e.g. all "t-shirt" together)
@@ -325,6 +348,7 @@ def map_page():
 # that command does NOT run the `if __name__ == "__main__"` block, so without
 # this line you get "no such table: users" on register/login.
 init_db()
+ensure_clothes_schema()
 
 if __name__ == "__main__":
     # debug=True is handy while learning; turn off in production
