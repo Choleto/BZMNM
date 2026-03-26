@@ -25,6 +25,13 @@ h1 {
     margin-bottom: 0.25rem;
 }
 
+/* Login / Register заглавие */
+.auth-brand-title {
+    color: #166534;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
 .tagline {
     color: #555;
     margin-top: 0;

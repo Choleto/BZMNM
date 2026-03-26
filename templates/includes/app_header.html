@@ -11,7 +11,6 @@
 
         <nav class="bc-navbar__menu" id="bcNavMenu" aria-label="Основна навигация">
             <div class="bc-navbar__links">
-                <a href="{{ url_for('home') }}#add-clothes" class="bc-navbar__link{% if active_page == 'home' %} is-active{% endif %}">Добави дреха</a>
                 <a href="{{ url_for('map_page') }}" class="bc-navbar__link{% if active_page == 'map' %} is-active{% endif %}">Дари</a>
                 <a href="{{ url_for('wardrobe') }}" class="bc-navbar__link{% if active_page == 'wardrobe' %} is-active{% endif %}">Гардероб</a>
                 <a href="{{ url_for('logout') }}" class="bc-navbar__link bc-navbar__link--logout">Изход</a>

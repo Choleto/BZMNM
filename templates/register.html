@@ -1,15 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bg">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio Clothes — Register</title>
+    <title>BioClother — Регистрация</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Bio Clothes</h1>
-        <p class="tagline">Create your account</p>
+        <h1 class="auth-brand-title">BioClother</h1>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -22,17 +21,17 @@
         {% endwith %}
 
         <form class="card" method="post" action="{{ url_for('register') }}">
-            <h2>Register</h2>
-            <label for="username">Username</label>
+            <h2>Регистрация</h2>
+            <label for="username">Потребителско име</label>
             <input type="text" id="username" name="username" required autocomplete="username">
 
-            <label for="password">Password</label>
+            <label for="password">Парола</label>
             <input type="password" id="password" name="password" required autocomplete="new-password">
 
-            <button type="submit">Create account</button>
+            <button type="submit">Създай акаунт</button>
         </form>
 
-        <p class="muted">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+        <p class="muted">Вече имаш акаунт? <a href="{{ url_for('login') }}">Вход</a></p>
     </div>
 </body>
 </html>
