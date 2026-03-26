@@ -8,22 +8,6 @@
     max-width: 1100px;
 }
 
-h1 {
-    margin-bottom: 0.25rem;
-}
-
-/* Login / Register заглавие */
-.auth-brand-title {
-    color: #166534;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-}
-
-.tagline {
-    color: #555;
-    margin-top: 0;
-}
-
 .muted {
     color: #666;
 }
@@ -32,7 +16,6 @@ h1 {
     font-size: 0.9rem;
 }
 
-/* Wardrobe page */
 .wardrobe-shell {
     margin-top: 1rem;
 }
@@ -601,19 +584,4 @@ button:hover {
 
 .form-mark-worn-hidden {
     display: none;
-}
-
-/* Leaflet map box */
-#map {
-    height: 420px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    margin-top: 1rem;
-}
-
-code {
-    background: #eee;
-    padding: 0.1rem 0.35rem;
-    border-radius: 3px;
-    font-size: 0.9em;
 }
