@@ -27,6 +27,8 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 # Needed so Flask can sign session cookies (change this in a real deployment!)
 app.secret_key = "change-this-secret-key-for-production"
+# Reload HTML templates when you edit them (Flask otherwise caches them if DEBUG is off)
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # Where uploaded images are stored (inside static so the browser can load them)
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
