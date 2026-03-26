@@ -5,6 +5,8 @@
 
 import os
 from datetime import date
+
+from dotenv import load_dotenv
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 
@@ -24,8 +26,16 @@ from werkzeug.utils import secure_filename
 # App setup
 # -----------------------------------------------------------------------------
 
+load_dotenv()
+
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:Silvester1@localhost:5432/BioClother"
+database_url = os.environ.get("DATABASE_URL")
+if not database_url:
+    raise RuntimeError(
+        "DATABASE_URL is not set. Export it or add it to a .env file in the project root "
+        "(e.g. DATABASE_URL=postgresql://user:password@localhost:5432/yourdb)."
+    )
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 # Needed so Flask can sign session cookies (change this in a real deployment!)
 app.secret_key = "change-this-secret-key-for-production"
 # Reload HTML templates when you edit them (Flask otherwise caches them if DEBUG is off)
