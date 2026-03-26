@@ -31,7 +31,8 @@
     border-radius: 8px;
 }
 
-.page-container button {
+/* Only the search button — not MapTiler controls inside #map (they live under .page-container too) */
+.search-box button {
     padding: 12px 25px;
     background: #2ecc71;
     color: white;
