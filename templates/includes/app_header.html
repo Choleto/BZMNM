@@ -7,13 +7,19 @@
             <span class="bc-navbar__toggle-line"></span>
         </button>
 
-        <a href="{{ url_for('home') }}" class="bc-navbar__brand">Bio Clother</a>
+        <a href="{% if session.get('user_id') %}{{ url_for('home') }}{% else %}{{ url_for('login') }}{% endif %}" class="bc-navbar__brand">Bio Clother</a>
 
         <nav class="bc-navbar__menu" id="bcNavMenu" aria-label="Основна навигация">
             <div class="bc-navbar__links">
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('home') }}#add-clothes" class="bc-navbar__link{% if active_page == 'home' %} is-active{% endif %}">Добави дреха</a>
                 <a href="{{ url_for('map_page') }}" class="bc-navbar__link{% if active_page == 'map' %} is-active{% endif %}">Дари</a>
                 <a href="{{ url_for('wardrobe') }}" class="bc-navbar__link{% if active_page == 'wardrobe' %} is-active{% endif %}">Гардероб</a>
                 <a href="{{ url_for('logout') }}" class="bc-navbar__link bc-navbar__link--logout">Изход</a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="bc-navbar__link{% if active_page == 'login' %} is-active{% endif %}">Вход</a>
+                <a href="{{ url_for('register') }}" class="bc-navbar__link{% if active_page == 'register' %} is-active{% endif %}">Регистрация</a>
+                {% endif %}
             </div>
         </nav>
     </div>

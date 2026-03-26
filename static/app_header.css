@@ -4,20 +4,20 @@
     position: sticky;
     top: 0;
     z-index: 2000;
-    padding: 0 1rem;
+    padding: 0;
 }
 
 .bc-navbar__bar {
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     min-height: 64px;
-    padding: 0.5rem 1rem;
-    margin-top: 0.5rem;
-    border-radius: 16px;
+    padding: 0.5rem max(1rem, env(safe-area-inset-left)) 0.5rem max(1rem, env(safe-area-inset-right));
+    border-radius: 0;
     background: rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);

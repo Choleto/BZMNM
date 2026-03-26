@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BioClother — Регистрация</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='page-shell.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app_header.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1 class="auth-brand-title">BioClother</h1>
+    {% set active_page = 'register' %}
+    {% include 'includes/app_header.html' %}
 
+    <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <ul class="flash-list">

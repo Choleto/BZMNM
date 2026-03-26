@@ -1,10 +1,4 @@
-/* Базови настройки */
-body {
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f0f2f5;
-}
+/* Базови настройки — body background/font come from page-shell.css */
 
 /* СТИЛОВЕ ЗА ХЕДЪРА */
 .site-header {
