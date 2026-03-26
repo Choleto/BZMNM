@@ -272,9 +272,77 @@
 
         .filters {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: 1fr 1fr;
             gap: 0.65rem;
             margin-top: 1.1rem;
+        }
+        .filter-field-color {
+            grid-column: 1 / -1;
+        }
+        .color-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+        .hue-slider {
+            flex: 1;
+            min-width: 0;
+            height: 14px;
+            border-radius: 7px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(
+                to right,
+                #f00 0%,
+                #ff0 16.66%,
+                #0f0 33.33%,
+                #0ff 50%,
+                #00f 66.66%,
+                #f0f 83.33%,
+                #f00 100%
+            );
+            cursor: pointer;
+        }
+        .hue-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid rgba(0, 0, 0, 0.25);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            cursor: grab;
+        }
+        .hue-slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid rgba(0, 0, 0, 0.25);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            cursor: grab;
+        }
+        .hue-slider::-moz-range-track {
+            height: 14px;
+            border-radius: 7px;
+            background: linear-gradient(
+                to right,
+                #f00 0%,
+                #ff0 16.66%,
+                #0f0 33.33%,
+                #0ff 50%,
+                #00f 66.66%,
+                #f0f 83.33%,
+                #f00 100%
+            );
+        }
+        .color-swatch {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
         }
         .filter-field > label {
             display: block;
@@ -505,34 +573,30 @@
                 <input type="text" id="title" name="title" placeholder="Незадължително">
 
                 <div class="filters">
-                    <div class="filter-field">
-                        <label for="field-color">Цвят</label>
-                        <div class="select-wrap">
-                            <select id="field-color" name="color" required>
-                                <option value="">Избери…</option>
-                                <option>Black</option>
-                                <option>White</option>
-                                <option>Gray</option>
-                                <option>Red</option>
-                                <option>Blue</option>
-                                <option>Green</option>
-                                <option>Yellow</option>
-                                <option>Other</option>
-                            </select>
+                    <div class="filter-field filter-field-color">
+                        <label for="color-hue">Цвят</label>
+                        <div class="color-slider-row">
+                            <input type="range" id="color-hue" class="hue-slider" min="0" max="360" value="145" autocomplete="off">
+                            <span class="color-swatch" id="color-swatch" title="Избран цвят"></span>
                         </div>
+                        <input type="hidden" name="color" id="color-value" value="" required>
                     </div>
                     <div class="filter-field">
                         <label for="field-type">Вид</label>
                         <div class="select-wrap">
                             <select id="field-type" name="type" required>
                                 <option value="">Избери…</option>
-                                <option>Shirt</option>
-                                <option>Pants</option>
-                                <option>Dress</option>
-                                <option>Jacket</option>
-                                <option>Shoes</option>
-                                <option>Accessory</option>
-                                <option>Other</option>
+                                <option value="Shirt">Риза</option>
+                                <option value="T-shirt">Тениска</option>
+                                <option value="Blouse">Блуза</option>
+                                <option value="Hoodie">Худи</option>
+                                <option value="Pants">Панталон</option>
+                                <option value="Shorts">Къси панталони</option>
+                                <option value="Dress">Рокля</option>
+                                <option value="Jacket">Яке</option>
+                                <option value="Shoes">Обувки</option>
+                                <option value="Accessory">Аксесоар</option>
+                                <option value="Other">Друго</option>
                             </select>
                         </div>
                     </div>
@@ -541,16 +605,16 @@
                         <div class="select-wrap">
                             <select id="field-season" name="season">
                                 <option value="">Всякакъв</option>
-                                <option>Spring</option>
-                                <option>Summer</option>
-                                <option>Fall</option>
-                                <option>Winter</option>
+                                <option value="Spring">Пролет</option>
+                                <option value="Summer">Лято</option>
+                                <option value="Fall">Есен</option>
+                                <option value="Winter">Зима</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                <button type="submit">Запази дарението</button>
+                <button type="submit">Добави в гардероб</button>
             </form>
         </div>
     </div>
@@ -574,6 +638,44 @@
                 preview.src = lastUrl;
                 box.classList.add("has-preview");
             });
+        })();
+
+        (function () {
+            function hslToHex(h, s, l) {
+                s /= 100;
+                l /= 100;
+                var c = (1 - Math.abs(2 * l - 1)) * s;
+                var x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+                var m = l - c / 2;
+                var r = 0, g = 0, b = 0;
+                if (h < 60) { r = c; g = x; b = 0; }
+                else if (h < 120) { r = x; g = c; b = 0; }
+                else if (h < 180) { r = 0; g = c; b = x; }
+                else if (h < 240) { r = 0; g = x; b = c; }
+                else if (h < 300) { r = x; g = 0; b = c; }
+                else { r = c; g = 0; b = x; }
+                function toHex(n) {
+                    var v = Math.round((n + m) * 255);
+                    var hex = v.toString(16);
+                    return hex.length === 1 ? "0" + hex : hex;
+                }
+                return "#" + toHex(r) + toHex(g) + toHex(b);
+            }
+
+            var hueInput = document.getElementById("color-hue");
+            var hiddenColor = document.getElementById("color-value");
+            var swatch = document.getElementById("color-swatch");
+
+            function syncColorFromHue() {
+                var h = Number(hueInput.value);
+                var hex = hslToHex(h, 65, 46);
+                hiddenColor.value = hex;
+                swatch.style.background = hex;
+            }
+
+            hueInput.addEventListener("input", syncColorFromHue);
+            hueInput.addEventListener("change", syncColorFromHue);
+            syncColorFromHue();
         })();
     </script>
 </body>
