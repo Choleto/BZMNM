@@ -235,6 +235,17 @@ def wardrobe():
         Clothes.last_worn_date.asc()
     ).all()
 
+    # Convert ORM objects to dictionaries for template
+    all_items = []
+    for item in clothes_list:
+        all_items.append({
+            'id': item.id,
+            'type': item.type,
+            'color': item.color,
+            'image_path': item.image_path,
+            'last_worn_date': item.last_worn_date,
+        })
+
     # Group items by type (e.g. all "t-shirt" together)
     grouped = {}
     for item in clothes_list:
@@ -247,6 +258,7 @@ def wardrobe():
     "wardrobe.html",
     username=session.get("username"),
     grouped=grouped,
+    all_items=all_items,
 )
 
 @app.route("/mark_worn/<int:item_id>", methods=["POST"])
