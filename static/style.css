@@ -174,6 +174,77 @@ a.wardrobe-donate-count--back {
     padding: 0.4rem 0.85rem;
 }
 
+.wardrobe-stale {
+    background: #fffbeb;
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.wardrobe-stale__title {
+    margin: 0 0 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #92400e;
+}
+
+.wardrobe-stale__note {
+    margin: 0 0 0.5rem;
+    font-size: 0.78rem;
+}
+
+.wardrobe-stale__list {
+    margin: 0;
+    padding-left: 1.15rem;
+    font-size: 0.85rem;
+    color: #44403c;
+}
+
+.wardrobe-stale__item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 0.75rem;
+    margin-bottom: 0.45rem;
+}
+
+.wardrobe-stale__item-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.wardrobe-stale-form {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+/* Като „Дари дреха(карта)“ — само в жълтата лента „Дрехи без носене…“ */
+.wardrobe-stale .btn-mark-donated--stale {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.55rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: auto;
+    margin: 0;
+}
+
+.wardrobe-stale .btn-mark-donated--stale:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45);
+}
+
 .wardrobe-controls {
     display: flex;
     flex-wrap: wrap;
@@ -359,6 +430,38 @@ a.wardrobe-donate-count--back {
 .item-card--wardrobe:hover {
     box-shadow: 0 10px 32px rgba(15, 23, 42, 0.12);
     transform: translateY(-5px);
+}
+
+.item-card--wardrobe.item-card--stale-unworn {
+    border-color: rgba(220, 38, 38, 0.4);
+    box-shadow: 0 2px 14px rgba(220, 38, 38, 0.14);
+    background: linear-gradient(180deg, #fff5f5 0%, #ffffff 32%);
+}
+
+.item-card--wardrobe.item-card--stale-unworn:hover {
+    box-shadow: 0 10px 28px rgba(220, 38, 38, 0.2);
+}
+
+.item-card-stale-msg {
+    margin: 0 0 0.55rem;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    font-weight: 600;
+    color: #991b1b;
+    background: rgba(254, 226, 226, 0.8);
+    border-radius: 8px;
+    border: 1px solid rgba(248, 113, 113, 0.4);
+}
+
+.item-card-stale-msg--below-photo {
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid rgba(248, 113, 113, 0.45);
+    padding: 0.5rem 0.65rem;
+    font-size: 0.76rem;
 }
 
 /* Photo: 15px radius on top corners as specified */

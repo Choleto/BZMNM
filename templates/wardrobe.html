@@ -100,6 +100,32 @@
                     </div>
                     {% endif %}
 
+                    {% if wardrobe_view == 'active' and stale_items %}
+                    <div class="wardrobe-stale" role="region" aria-label="Дрехи без скорошно носене">
+                        <p class="wardrobe-stale__title">Дрехи без носене от поне 3 месеца</p>
+                        <p class="wardrobe-stale__note muted small">Само по дати — смяната на сезона не се отчита.</p>
+                        <ul class="wardrobe-stale__list">
+                            {% for s in stale_items %}
+                            <li class="wardrobe-stale__item">
+                                <span class="wardrobe-stale__item-text">
+                                    <strong>{{ s.type_label }}</strong>
+                                    {% if s.last_worn_date %}
+                                    — последно носена: {{ s.last_worn_date }}
+                                    {% else %}
+                                    — няма записано носене; добавена: {{ s.date_added or '—' }}
+                                    {% endif %}
+                                </span>
+                                {% if s.show_donate %}
+                                <form method="post" action="{{ url_for('donate_item', item_id=s.id) }}" class="item-card-delete-form wardrobe-stale-form">
+                                    <button type="submit" class="btn-mark-donated btn-mark-donated--stale">Маркирай за дарена</button>
+                                </form>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
                     {% if not all_items %}
                         {% if wardrobe_view == 'donated' %}
                         <div class="wardrobe-empty-state">
@@ -129,10 +155,13 @@
                                 {% set t = item['type'] %}
                                 {% set title_bg = type_bg[t] if t in type_bg else t %}
                                 {% set se = item['season'] or '' %}
-                                <article class="item-card item-card--wardrobe" style="--card-i: {{ loop.index0 }}" data-item-id="{{ item['id'] }}" data-item-type="{{ item['type']|e }}" data-season="{{ se|e }}" data-price="{{ item['price'] if item['price'] is not none else '' }}" data-times-worn="{{ item['times_worn'] }}">
+                                <article class="item-card item-card--wardrobe{% if wardrobe_view == 'active' and item['stale_warning'] %} item-card--stale-unworn{% endif %}" style="--card-i: {{ loop.index0 }}" data-item-id="{{ item['id'] }}" data-item-type="{{ item['type']|e }}" data-season="{{ se|e }}" data-price="{{ item['price'] if item['price'] is not none else '' }}" data-times-worn="{{ item['times_worn'] }}">
                                     <div class="item-card-image-wrap">
                                         <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ title_bg }}" loading="lazy">
                                     </div>
+                                    {% if wardrobe_view == 'active' and item['stale_warning'] %}
+                                    <p class="item-card-stale-msg item-card-stale-msg--below-photo">{{ item['stale_warning'] }}</p>
+                                    {% endif %}
                                     <div class="item-card-season-strip item-card-season-strip--{{ season_theme[se] if se in season_theme else 'unset' }}" role="group" aria-label="Сезон">
                                         <span class="item-card-season-label">Сезон:</span>
                                         {% if se and se in season_bg %}

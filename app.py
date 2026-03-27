@@ -5,7 +5,7 @@
 # Този файл е „сърцето“ на сървъра: връзка с база данни, страници и качване на снимки.
 
 import os
-from datetime import date
+from datetime import date, timedelta
 
 # Външни библиотеки: Flask (уеб), SQLAlchemy (база), сигурност на пароли и файлове
 from dotenv import load_dotenv
@@ -87,6 +87,16 @@ class Clothes(db.Model):
     date_added = db.Column(db.String(10), nullable=True)
     # active = в гардероба; donated = маркирана като дарена (остава в БД за преглед)
     status = db.Column(db.String(20), nullable=False, default="active")
+
+
+def _parse_iso_date(s):
+    """YYYY-MM-DD или None."""
+    if not s or not str(s).strip():
+        return None
+    try:
+        return date.fromisoformat(str(s)[:10])
+    except ValueError:
+        return None
 
 
 def allowed_file(filename):
@@ -340,10 +350,23 @@ def wardrobe():
         Clothes.last_worn_date.asc()
     )
     clothes_list = q.all()
+    cutoff = date.today() - timedelta(days=90)
 
     # За шаблона превръщаме обектите в речници (прости структури)
     all_items = []
     for item in clothes_list:
+        lw = _parse_iso_date(item.last_worn_date)
+        da = _parse_iso_date(item.date_added)
+        stale_warning = None
+        if view == "active":
+            if lw is not None and lw < cutoff:
+                stale_warning = (
+                    "Не сте я носили от поне 3 месеца. Желаете ли да я дарите?"
+                )
+            elif lw is None and da is not None and da < cutoff:
+                stale_warning = (
+                    "Наскоро не сте я носили. Желаете ли да я дарите?"
+                )
         all_items.append({
             'id': item.id,
             'type': item.type,
@@ -355,6 +378,7 @@ def wardrobe():
             'times_worn': item.times_worn if item.times_worn is not None else 0,
             'date_added': item.date_added or '',
             'status': getattr(item, 'status', None) or 'active',
+            'stale_warning': stale_warning,
         })
 
     # Групиране по вид дреха (напр. всички тениски заедно)
@@ -365,12 +389,52 @@ def wardrobe():
             grouped[t] = []
         grouped[t].append(item)
 
+    # Активни дрехи без носене поне 3 месеца (по дата; сезоните не се коригират)
+    stale_items = []
+    if view == "active":
+        type_bg = {
+            "Shirt": "Риза",
+            "T-shirt": "Тениска",
+            "Blouse": "Блуза",
+            "Hoodie": "Худи",
+            "Pants": "Панталон",
+            "Shorts": "Къси панталони",
+            "Dress": "Рокля",
+            "Jacket": "Яке",
+            "Shoes": "Обувки",
+            "Accessory": "Аксесоар",
+            "Other": "Друго",
+        }
+        for item in clothes_list:
+            lw = _parse_iso_date(item.last_worn_date)
+            da = _parse_iso_date(item.date_added)
+            old = False
+            if lw is not None:
+                if lw < cutoff:
+                    old = True
+            else:
+                if da is not None and da < cutoff:
+                    old = True
+            if old:
+                t = item.type
+                show_donate = True
+                stale_items.append(
+                    {
+                        "id": item.id,
+                        "type_label": type_bg.get(t, t),
+                        "last_worn_date": item.last_worn_date or "",
+                        "date_added": item.date_added or "",
+                        "show_donate": show_donate,
+                    }
+                )
+
     return render_template(
         "wardrobe.html",
         username=session.get("username"),
         grouped=grouped,
         all_items=all_items,
         wardrobe_view=view,
+        stale_items=stale_items,
     )
 
 AI_SYSTEM_PROMPT = (
