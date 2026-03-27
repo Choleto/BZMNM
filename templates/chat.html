@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio Clothes — Чат с AI</title>
+    <title>Bio Clother — Чат с AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='page-shell.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='app_header.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='chat.css') }}">
 </head>
 <body class="chat-body" data-chat-send-url="/Ai_assistant/chat">
@@ -14,26 +13,59 @@
     {% include 'includes/app_header.html' %}
 
     <main class="chat-layout">
-        <div class="chat-intro">
-            <h1 class="chat-intro__title">Чат с AI</h1>
-            <p class="chat-intro__text">Питай за дрехи, дарения и устойчивост — отговорът идва от сървъра.</p>
-        </div>
+        <div class="chat-card">
 
-        <div class="chat-panel">
-            <ul class="chat-log" id="chatLog" aria-live="polite">
+            <!-- ── Card header ── -->
+            <div class="chat-card-header">
+                <div class="chat-card-header-icon">🌿</div>
+                <div>
+                    <h1 class="chat-card-title">Чат с AI</h1>
+                    <p class="chat-card-subtitle">Питай за дрехи, дарения и устойчивост</p>
+                </div>
+                <div class="chat-status">
+                    <span class="chat-status-dot"></span>Онлайн
+                </div>
+            </div>
+
+            <!-- ── Scrollable message log ── -->
+            <ul class="chat-log" id="chatLog" aria-live="polite" aria-label="Разговор">
+
                 {% for entry in chat_history %}
                     <li class="chat-msg chat-msg--{{ 'user' if entry.role == 'user' else 'ai' }}">
-                        {{ entry.content }}
+                        <div class="chat-icon" aria-hidden="true"></div>
+                        <div class="chat-bubble">{{ entry.content }}</div>
                     </li>
                 {% endfor %}
+
+                <!-- Typing indicator: shown while AI is generating a reply -->
+                <li class="chat-typing" id="chatTyping" hidden aria-hidden="true">
+                    <div class="chat-icon"></div>
+                    <div class="chat-bubble">
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                    </div>
+                </li>
+
             </ul>
 
-            <form class="chat-form" id="chatForm">
-                <label class="visually-hidden" for="chatInput">Твоето съобщение</label>
-                <textarea id="chatInput" rows="4" placeholder="Напиши нещо…"></textarea>
-                <button type="submit" class="chat-send" id="chatSend">Изпрати</button>
-            </form>
-            <p class="chat-error" id="chatError" hidden role="alert"></p>
+            <!-- ── Glassmorphism input area ── -->
+            <div class="chat-input-area">
+                <p class="chat-error" id="chatError" hidden role="alert"></p>
+                <form class="chat-form" id="chatForm">
+                    <label class="visually-hidden" for="chatInput">Твоето съобщение</label>
+                    <textarea id="chatInput" rows="1" placeholder="Напиши нещо… (Enter за изпращане)"></textarea>
+                    <button type="submit" class="chat-send" id="chatSend" aria-label="Изпрати">
+                        <!-- Paper-plane send icon -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 2 11 13"/>
+                            <path d="M22 2 15 22 11 13 2 9l20-7z"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
         </div>
     </main>
 
