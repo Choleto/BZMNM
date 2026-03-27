@@ -1,4 +1,4 @@
-/* Мобилно меню + профил панел + синхронизация на брояч „Дрехи дарени“ от localStorage */
+/* Мобилно меню + профил панел; брояч „Дрехи дарени“ от data-donate-count (БД) */
 (function () {
     var menuButton = document.getElementById("bcNavToggle");
     var menuPanel = document.getElementById("bcNavMenu");
@@ -49,10 +49,11 @@
     var donateEls = document.querySelectorAll(".js-donate-marked-count");
     if (donateEls.length) {
         var dn = 0;
-        try {
-            dn = parseInt(localStorage.getItem("wardrobeDonateMarkedCount_v1") || "0", 10);
+        var src = document.querySelector(".js-donate-marked-count[data-donate-count]");
+        if (src) {
+            dn = parseInt(src.getAttribute("data-donate-count") || "0", 10);
             if (isNaN(dn) || dn < 0) dn = 0;
-        } catch (e) {}
+        }
         var donateLabel = "Дрехи дарени: " + dn;
         for (var j = 0; j < donateEls.length; j++) donateEls[j].textContent = donateLabel;
     }

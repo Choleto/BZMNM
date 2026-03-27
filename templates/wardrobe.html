@@ -72,7 +72,7 @@
                         <a href="{{ url_for('home') }}" class="wardrobe-add-link">Добави нова+</a>
                         <div class="wardrobe-donate-toolbar" title="Брой пъти, в които си маркирал дреха за дарена">
                             <a href="{{ url_for('map_page') }}" class="btn-donate-clothes" title="Карта на пунктове за дарения">Дари дреха(карта)</a>
-                            <span class="wardrobe-donate-count js-donate-marked-count" aria-live="polite" data-donate-count="{{ donate_count }}">Дрехи дарени: {{ donate_count }}</span>
+                            <span class="wardrobe-donate-count js-donate-marked-count" aria-live="polite" data-donate-count="{{ donate_count|default(0) }}">Дрехи дарени: {{ donate_count|default(0) }}</span>
                         </div>
                     </div>
 
@@ -113,7 +113,7 @@
                                 {% set t = item['type'] %}
                                 {% set title_bg = type_bg[t] if t in type_bg else t %}
                                 {% set se = item['season'] or '' %}
-                                <article class="item-card item-card--wardrobe" style="--card-i: {{ loop.index0 }}" data-item-id="{{ item['id'] }}" data-item-type="{{ item['type']|e }}" data-season="{{ se|e }}" data-price="{{ item['price'] if item['price'] is not none else '' }}">
+                                <article class="item-card item-card--wardrobe" style="--card-i: {{ loop.index0 }}" data-item-id="{{ item['id'] }}" data-item-type="{{ item['type']|e }}" data-season="{{ se|e }}" data-price="{{ item['price'] if item['price'] is not none else '' }}" data-times-worn="{{ item['times_worn'] }}">
                                     <div class="item-card-image-wrap">
                                         <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ title_bg }}" loading="lazy">
                                     </div>
@@ -141,11 +141,11 @@
                                         </p>
                                         <p class="muted small">Последно носене: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}няма данни{% endif %}</p>
                                         <p class="muted small">Цена: {% if item['price'] is not none %}{{ '%.2f'|format(item['price']) }} €{% else %}не е зададена{% endif %}</p>
-                                        <p class="small">Дата на добавяне: <span class="js-date-added" data-item-id="{{ item['id'] }}">—</span></p>
+                                        <p class="small">Дата на добавяне: <span class="js-date-added" data-item-id="{{ item['id'] }}">{{ item['date_added'] or '—' }}</span></p>
                                         <p class="item-worn-stat" aria-live="polite">
                                             <span class="item-worn-stat__icon" aria-hidden="true">👕</span>
                                             <span class="item-worn-stat__label">Носена:</span>
-                                            <span class="item-worn-stat__num js-times" data-item-id="{{ item['id'] }}">0</span>
+                                            <span class="item-worn-stat__num js-times" data-item-id="{{ item['id'] }}">{{ item['times_worn'] }}</span>
                                             <span class="item-worn-stat__suffix">пъти</span>
                                         </p>
                                         <p class="muted small item-cost-per-wear"><strong>Цена за носене (€):</strong> <span class="js-cost-per-wear"></span></p>

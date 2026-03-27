@@ -3,7 +3,6 @@
     var uid = panel && panel.getAttribute("data-user-id");
     if (!uid) return;
 
-    var key = "bc_profile_avatar_" + uid;
     var nav = document.getElementById("bcNavbarProfileAvatar");
     var imgs = document.querySelectorAll(".js-profile-photo");
     var backs = document.querySelectorAll(".js-profile-photo-fallback");
@@ -24,35 +23,38 @@
         if (rem) rem.hidden = !ok;
     }
 
-    try {
-        paint(localStorage.getItem(key) || "");
-    } catch (e) {
-        paint("");
-    }
+    var initialUrl = (panel.getAttribute("data-profile-pic-url") || "").trim();
+    paint(initialUrl);
 
     if (inp) {
         inp.addEventListener("change", function () {
             var f = inp.files && inp.files[0];
             inp.value = "";
             if (!f || f.type.indexOf("image/") !== 0) return;
-            var r = new FileReader();
-            r.onload = function () {
-                try {
-                    localStorage.setItem(key, r.result);
-                } catch (e) {
-                    return;
-                }
-                paint(r.result);
-            };
-            r.readAsDataURL(f);
+            var fd = new FormData();
+            fd.append("avatar", f);
+            fetch("/profile/avatar", { method: "POST", body: fd, credentials: "same-origin" })
+                .then(function (r) {
+                    if (!r.ok) throw new Error("upload failed");
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (data.url) paint(data.url);
+                })
+                .catch(function () {});
         });
     }
     if (rem) {
         rem.addEventListener("click", function () {
-            try {
-                localStorage.removeItem(key);
-            } catch (e) {}
-            paint("");
+            fetch("/profile/avatar/delete", { method: "POST", credentials: "same-origin" })
+                .then(function (r) {
+                    if (!r.ok) throw new Error("delete failed");
+                    return r.json();
+                })
+                .then(function () {
+                    paint("");
+                })
+                .catch(function () {});
         });
     }
 })();

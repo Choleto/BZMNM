@@ -27,7 +27,7 @@
                         </span>
                         <small>Профил</small>
                     </button>
-                    <div id="bcProfilePanel" class="bc-navbar__profile-panel" role="menu" hidden data-user-id="{{ session.get('user_id', '') }}">
+                    <div id="bcProfilePanel" class="bc-navbar__profile-panel" role="menu" hidden data-user-id="{{ session.get('user_id', '') }}" data-profile-pic-url="{{ profile_pic_url or '' }}">
                         <p class="bc-navbar__profile-name">{{ session.get('username', '') }}</p>
                         <div class="bc-navbar__profile-picture">
                             <div class="bc-navbar__profile-picture-preview">
@@ -38,7 +38,7 @@
                             <input type="file" id="bcProfileAvatarInput" accept="image/*" hidden />
                             <button type="button" class="bc-navbar__profile-picture-remove" id="bcProfileAvatarRemove" hidden>Премахни снимката</button>
                         </div>
-                        <p class="bc-navbar__profile-donate js-donate-marked-count" aria-live="polite">Дрехи дарени: 0</p>
+                        <p class="bc-navbar__profile-donate js-donate-marked-count" data-donate-count="{{ donate_count|default(0) }}" aria-live="polite">Дрехи дарени: {{ donate_count|default(0) }}</p>
                         <a href="{{ url_for('logout') }}" class="bc-navbar__profile-logout" role="menuitem">Изход</a>
                     </div>
                 </div>

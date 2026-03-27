@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from google import genai
+from sqlalchemy import text
 
 from flask import (
     Flask,
@@ -51,6 +52,7 @@ db = SQLAlchemy(app)
 
 # Качените снимки се пазят тук; папката е под static/, за да се отварят в браузъра
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
+AVATAR_FOLDER = os.path.join(app.root_path, "static", "uploads", "avatars")
 # Разрешени разширения за снимки
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
@@ -79,6 +81,10 @@ class Clothes(db.Model):
     season = db.Column(db.String(20), nullable=True)
     # Цена на дрехата (опционално)
     price = db.Column(db.Float, nullable=True)
+    # Брой пъти „носих я“ (синхрон със сървъра; преди беше localStorage wardrobeTimesWorn_v1)
+    times_worn = db.Column(db.Integer, nullable=False, default=0)
+    # Дата на добавяне в гардероба YYYY-MM-DD (преди wardrobeDateAdded_v1)
+    date_added = db.Column(db.String(10), nullable=True)
 
 
 def allowed_file(filename):
@@ -93,11 +99,47 @@ def allowed_file(filename):
 # Създаване на таблици и миграции „на ръка“ за липсващи колони
 # =============================================================================
 
+def ensure_schema():
+    """Добавя липсващи колони за съществуващи PostgreSQL бази (create_all не променя стари таблици)."""
+    with app.app_context():
+        db.session.execute(
+            text(
+                "ALTER TABLE clothes ADD COLUMN IF NOT EXISTS times_worn INTEGER NOT NULL DEFAULT 0"
+            )
+        )
+        db.session.execute(
+            text("ALTER TABLE clothes ADD COLUMN IF NOT EXISTS date_added VARCHAR(10)")
+        )
+        db.session.commit()
+        # Попълване на date_added за стари редове
+        for row in Clothes.query.filter(Clothes.date_added.is_(None)).all():
+            row.date_added = row.last_worn_date or date.today().isoformat()
+        db.session.commit()
+
+
 def init_db():
     """Създава таблиците в базата, ако още не съществуват."""
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(AVATAR_FOLDER, exist_ok=True)
     with app.app_context():
         db.create_all()
+        ensure_schema()
+
+
+@app.context_processor
+def inject_user_extras():
+    """Стойности, които преди бяха в localStorage / само в шаблони."""
+    uid = session.get("user_id")
+    if not uid:
+        return {}
+    user = db.session.get(User, uid)
+    if not user:
+        return {}
+    pic = user.profile_pic_path
+    return {
+        "donate_count": user.donate_marked_count or 0,
+        "profile_pic_url": url_for("static", filename=pic) if pic else None,
+    }
 
 
 def login_required(view):
@@ -242,6 +284,7 @@ def upload():
     # Пътят в базата; браузърът зарежда чрез /static/uploads/...
     db_path = f"uploads/{unique_name}"
 
+    today_str = date.today().isoformat()
     try:
         clothing = Clothes(
             user_id=session["user_id"],
@@ -250,6 +293,7 @@ def upload():
             color=color,
             season=season,
             price=price,
+            date_added=today_str,
         )
         db.session.add(clothing)
         db.session.commit()
@@ -283,7 +327,8 @@ def wardrobe():
             'last_worn_date': item.last_worn_date,
             'season': getattr(item, 'season', None) or '',
             'price': item.price,
-
+            'times_worn': item.times_worn if item.times_worn is not None else 0,
+            'date_added': item.date_added or '',
         })
 
     # Групиране по вид дреха (напр. всички тениски заедно)
@@ -295,12 +340,11 @@ def wardrobe():
         grouped[t].append(item)
 
     return render_template(
-    "wardrobe.html",
-    username=session.get("username"),
-    grouped=grouped,
-    all_items=all_items,
-    donate_count=db.session.get(User, session["user_id"]).donate_marked_count,
-)
+        "wardrobe.html",
+        username=session.get("username"),
+        grouped=grouped,
+        all_items=all_items,
+    )
 
 AI_SYSTEM_PROMPT = (
     "You are a friendly, practical, and knowledgeable wardrobe assistant for a sustainable clothing app. "
@@ -405,6 +449,7 @@ def mark_worn(item_id):
     item = Clothes.query.filter_by(id=item_id, user_id=session["user_id"]).first()
     if item:
         item.last_worn_date = today
+        item.times_worn = (item.times_worn or 0) + 1
         db.session.commit()
         flash("Marked as worn today!", "success")
     else:
@@ -458,6 +503,54 @@ def donate_item(item_id):
     return redirect(url_for("wardrobe"))
 
 
+@app.route("/profile/avatar", methods=["POST"])
+@login_required
+def profile_avatar_upload():
+    """Качва профилна снимка на диск и записва profile_pic_path (вместо localStorage base64)."""
+    if "avatar" not in request.files:
+        return jsonify({"error": "No file"}), 400
+    file = request.files["avatar"]
+    if not file.filename or not allowed_file(file.filename):
+        return jsonify({"error": "Invalid image"}), 400
+    uid = session["user_id"]
+    user = db.session.get(User, uid)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    if user.profile_pic_path:
+        old_path = os.path.join(app.root_path, "static", user.profile_pic_path)
+        if os.path.isfile(old_path):
+            try:
+                os.remove(old_path)
+            except OSError:
+                pass
+    fname = secure_filename(file.filename)
+    unique_name = f"{uid}_{fname}"
+    save_path = os.path.join(AVATAR_FOLDER, unique_name)
+    file.save(save_path)
+    rel = f"uploads/avatars/{unique_name}"
+    user.profile_pic_path = rel
+    db.session.commit()
+    return jsonify({"url": url_for("static", filename=rel)})
+
+
+@app.route("/profile/avatar/delete", methods=["POST"])
+@login_required
+def profile_avatar_delete():
+    """Премахва профилната снимка от базата и диска."""
+    uid = session["user_id"]
+    user = db.session.get(User, uid)
+    if user and user.profile_pic_path:
+        full_path = os.path.join(app.root_path, "static", user.profile_pic_path)
+        if os.path.isfile(full_path):
+            try:
+                os.remove(full_path)
+            except OSError:
+                pass
+        user.profile_pic_path = None
+        db.session.commit()
+    return jsonify({"ok": True})
+
+
 @app.route('/export_clothes', methods=['GET'])
 @login_required
 def export_clothes():
@@ -473,9 +566,11 @@ def export_clothes():
             'color': item.color,
             'image_path': item.image_path,
             'last_worn_date': item.last_worn_date,
-            'season': getattr(item, 'season', None) or '',            
-            'price': item.price,        
-            })
+            'season': getattr(item, 'season', None) or '',
+            'price': item.price,
+            'times_worn': item.times_worn if item.times_worn is not None else 0,
+            'date_added': item.date_added or '',
+        })
     
     # Return as JSON (like the chat endpoint)
     return jsonify(data)
