@@ -1,13 +1,16 @@
+/* Профилна снимка: качване/премахване през /profile/avatar (виж app.py) */
 (function () {
     var panel = document.getElementById("bcProfilePanel");
-    var uid = panel && panel.getAttribute("data-user-id");
-    if (!uid) return;
+    if (!panel) return;
 
-    var nav = document.getElementById("bcNavbarProfileAvatar");
+    var uploadUrl = panel.getAttribute("data-avatar-upload") || "/profile/avatar";
+    var deleteUrl = panel.getAttribute("data-avatar-delete") || "/profile/avatar/delete";
+
     var imgs = document.querySelectorAll(".js-profile-photo");
     var backs = document.querySelectorAll(".js-profile-photo-fallback");
     var inp = document.getElementById("bcProfileAvatarInput");
     var rem = document.getElementById("bcProfileAvatarRemove");
+    var toggleBtn = document.getElementById("bcProfileToggle");
 
     function paint(url) {
         var ok = !!url;
@@ -19,8 +22,8 @@
         backs.forEach(function (el) {
             el.hidden = ok;
         });
-        if (nav) nav.classList.toggle("has-photo", ok);
         if (rem) rem.hidden = !ok;
+        if (toggleBtn) toggleBtn.classList.toggle("has-photo", ok);
     }
 
     var initialUrl = (panel.getAttribute("data-profile-pic-url") || "").trim();
@@ -33,26 +36,31 @@
             if (!f || f.type.indexOf("image/") !== 0) return;
             var fd = new FormData();
             fd.append("avatar", f);
-            fetch("/profile/avatar", { method: "POST", body: fd, credentials: "same-origin" })
+            fetch(uploadUrl, { method: "POST", body: fd, credentials: "same-origin" })
                 .then(function (r) {
                     if (!r.ok) throw new Error("upload failed");
                     return r.json();
                 })
                 .then(function (data) {
-                    if (data.url) paint(data.url);
+                    if (data.url) {
+                        paint(data.url);
+                        panel.setAttribute("data-profile-pic-url", data.url);
+                    }
                 })
                 .catch(function () {});
         });
     }
+
     if (rem) {
         rem.addEventListener("click", function () {
-            fetch("/profile/avatar/delete", { method: "POST", credentials: "same-origin" })
+            fetch(deleteUrl, { method: "POST", credentials: "same-origin" })
                 .then(function (r) {
                     if (!r.ok) throw new Error("delete failed");
                     return r.json();
                 })
                 .then(function () {
                     paint("");
+                    panel.setAttribute("data-profile-pic-url", "");
                 })
                 .catch(function () {});
         });

@@ -110,6 +110,16 @@ def ensure_schema():
         db.session.execute(
             text("ALTER TABLE clothes ADD COLUMN IF NOT EXISTS date_added VARCHAR(10)")
         )
+        db.session.execute(
+            text(
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS profile_pic_path VARCHAR(255)'
+            )
+        )
+        db.session.execute(
+            text(
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS donate_marked_count INTEGER DEFAULT 0'
+            )
+        )
         db.session.commit()
         # Попълване на date_added за стари редове
         for row in Clothes.query.filter(Clothes.date_added.is_(None)).all():
@@ -506,7 +516,11 @@ def donate_item(item_id):
 @app.route("/profile/avatar", methods=["POST"])
 @login_required
 def profile_avatar_upload():
-    """Качва профилна снимка на диск и записва profile_pic_path (вместо localStorage base64)."""
+    """
+    Качва профилна снимка: файл в static/uploads/avatars/, път в user.profile_pic_path.
+    Извиква се от static/profile_avatar.js (FormData, поле avatar).
+    """
+    os.makedirs(AVATAR_FOLDER, exist_ok=True)
     if "avatar" not in request.files:
         return jsonify({"error": "No file"}), 400
     file = request.files["avatar"]
@@ -536,7 +550,7 @@ def profile_avatar_upload():
 @app.route("/profile/avatar/delete", methods=["POST"])
 @login_required
 def profile_avatar_delete():
-    """Премахва профилната снимка от базата и диска."""
+    """Премахва профилната снимка от базата и диска (извиква се от profile_avatar.js)."""
     uid = session["user_id"]
     user = db.session.get(User, uid)
     if user and user.profile_pic_path:

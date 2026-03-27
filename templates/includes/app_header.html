@@ -20,26 +20,26 @@
                 <a href="{{ url_for('wardrobe') }}" class="bc-navbar__link{% if active_page == 'wardrobe' %} is-active{% endif %}">Гардероб</a>
                 <a href="{{ url_for('ai_assistant') }}" class="bc-navbar__link{% if active_page == 'chat' %} is-active{% endif %}">Чат с AI</a>
                 <div class="bc-navbar__profile-wrap">
-                    <button type="button" class="bc-navbar__profile-btn" id="bcProfileToggle" aria-expanded="false" aria-haspopup="true" aria-controls="bcProfilePanel">
-                        <span class="bc-navbar__profile-avatar" id="bcNavbarProfileAvatar" aria-hidden="true">
-                            <img class="bc-navbar__profile-avatar-img js-profile-photo" alt="" hidden />
-                            <span class="bc-navbar__profile-avatar-fallback js-profile-photo-fallback"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>
+                    <button type="button" class="bc-navbar__profile-icon-btn" id="bcProfileToggle" aria-expanded="false" aria-haspopup="true" aria-controls="bcProfilePanel" aria-label="Профилно меню">
+                        <img class="bc-navbar__profile-btn-photo js-profile-photo" alt="" width="38" height="38" hidden />
+                        <span class="bc-navbar__profile-btn-fallback js-profile-photo-fallback" aria-hidden="true">
+                            <svg class="bc-navbar__profile-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M4 20.5c1.5-4 6-5.5 8-5.5s6.5 1.5 8 5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
                         </span>
-                        <small>Профил</small>
                     </button>
-                    <div id="bcProfilePanel" class="bc-navbar__profile-panel" role="menu" hidden data-user-id="{{ session.get('user_id', '') }}" data-profile-pic-url="{{ profile_pic_url or '' }}">
-                        <p class="bc-navbar__profile-name">{{ session.get('username', '') }}</p>
-                        <div class="bc-navbar__profile-picture">
-                            <div class="bc-navbar__profile-picture-preview">
-                                <img class="bc-navbar__profile-picture-img js-profile-photo" alt="" hidden />
-                                <span class="bc-navbar__profile-picture-fallback js-profile-photo-fallback" aria-hidden="true">👤</span>
-                            </div>
-                            <label for="bcProfileAvatarInput" class="bc-navbar__profile-picture-choose">Профилна снимка — избери файл</label>
-                            <input type="file" id="bcProfileAvatarInput" accept="image/*" hidden />
-                            <button type="button" class="bc-navbar__profile-picture-remove" id="bcProfileAvatarRemove" hidden>Премахни снимката</button>
+                    <div id="bcProfilePanel" class="bc-navbar__profile-panel" role="menu" hidden
+                         data-profile-pic-url="{{ profile_pic_url|default('', true) }}"
+                         data-avatar-upload="{{ url_for('profile_avatar_upload') }}"
+                         data-avatar-delete="{{ url_for('profile_avatar_delete') }}">
+                        <p class="bc-navbar__profile-nickname">{{ session.get('username', '') }}</p>
+                        <div class="bc-navbar__profile-avatar-actions">
+                            <input type="file" id="bcProfileAvatarInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden />
+                            <label for="bcProfileAvatarInput" class="bc-navbar__profile-avatar-label">Добави или смени снимка</label>
+                            <button type="button" class="bc-navbar__profile-remove-btn" id="bcProfileAvatarRemove" hidden>Премахни снимката</button>
                         </div>
-                        <p class="bc-navbar__profile-donate js-donate-marked-count" data-donate-count="{{ donate_count|default(0) }}" aria-live="polite">Дрехи дарени: {{ donate_count|default(0) }}</p>
-                        <a href="{{ url_for('logout') }}" class="bc-navbar__profile-logout" role="menuitem">Изход</a>
+                        <a href="{{ url_for('logout') }}" class="bc-navbar__profile-logout-btn" role="menuitem">Изход</a>
                     </div>
                 </div>
                 {% else %}
@@ -55,4 +55,6 @@
 </header>
 
 <script src="{{ url_for('static', filename='navbar.js') }}" defer></script>
+{% if session.get('user_id') %}
 <script src="{{ url_for('static', filename='profile_avatar.js') }}" defer></script>
+{% endif %}

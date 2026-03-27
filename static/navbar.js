@@ -1,4 +1,4 @@
-/* Мобилно меню + профил панел; брояч „Дрехи дарени“ от data-donate-count (БД) */
+/* Мобилно меню; брояч „Дрехи дарени“ от data-donate-count (БД) за елементи с .js-donate-marked-count */
 (function () {
     var menuButton = document.getElementById("bcNavToggle");
     var menuPanel = document.getElementById("bcNavMenu");
