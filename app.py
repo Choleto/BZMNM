@@ -376,7 +376,7 @@ def ai_chat():
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-2.5-flash-lite",
             contents=prompt_for_model,
         )
         ai_reply = response.text.strip() if hasattr(response, "text") else str(response)
