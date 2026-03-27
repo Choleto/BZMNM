@@ -20,8 +20,9 @@
         <div class="info-panel">
 
             <div class="panel-headline">
-                <h2>Дари дрехи.<br>Промени живот.</h2>
-                <p>Превърни ненужното в ценна помощ. Подари нов живот на дрехите си и подкрепи природата с един клик.</p>
+                <p class="panel-headline__kicker">Устойчив стил</p>
+                <h2 class="panel-headline__title">Дари дрехи.<br><span class="panel-headline__accent">Промени живот.</span></h2>
+                <p class="panel-headline__lead">Превърни ненужното в ценна помощ. Подари нов живот на дрехите си и подкрепи природата с един клик.</p>
             </div>
 
             <div class="illus-grid">
@@ -131,14 +132,19 @@
                 {% endif %}
             {% endwith %}
 
-            <div class="form-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20.38 3.46A2 2 0 0 0 18 2H6a2 2 0 0 0-2.38 1.46L2 8h20l-1.62-4.54z"/>
-                    <rect x="2" y="8" width="20" height="13" rx="2"/>
-                    <path d="M12 12v5M9.5 14.5 12 12l2.5 2.5"/>
-                </svg>
-                Добави дреха
-            </div>
+            <header class="form-title">
+                <span class="form-title__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.38 3.46A2 2 0 0 0 18 2H6a2 2 0 0 0-2.38 1.46L2 8h20l-1.62-4.54z"/>
+                        <rect x="2" y="8" width="20" height="13" rx="2"/>
+                        <path d="M12 12v5M9.5 14.5 12 12l2.5 2.5"/>
+                    </svg>
+                </span>
+                <div class="form-title__text">
+                    <h2 class="form-title__heading">Добави дреха</h2>
+                    <p class="form-title__sub">Снимка, цвят и детайли — след това в гардероба ти.</p>
+                </div>
+            </header>
 
             <!-- enctype за качване на файлове; action е маршрутът upload в app.py -->
             <form id="add-clothes" method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">

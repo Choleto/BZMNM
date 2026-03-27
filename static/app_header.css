@@ -58,13 +58,21 @@
     font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: -0.03em;
-    color: #18181b;
+    color: #1e293b;
     text-decoration: none;
     white-space: nowrap;
 }
 
+.bc-navbar__brand-em {
+    color: #15803d;
+}
+
 .bc-navbar__brand:hover {
-    color: #2563eb;
+    color: #0f172a;
+}
+
+.bc-navbar__brand:hover .bc-navbar__brand-em {
+    color: #14532d;
 }
 
 .bc-navbar__toggle {
