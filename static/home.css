@@ -302,6 +302,37 @@
     border: 2px solid var(--border);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
+
+/* Бърз избор: чисто черно / бяло (нюансовият плъзгач не ги покрива) */
+.color-preset {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.color-preset--black {
+    background: #000000;
+}
+.color-preset--white {
+    background: #ffffff;
+    border-color: #d1d5db;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.color-preset:hover {
+    transform: scale(1.05);
+}
+.color-preset:focus {
+    outline: none;
+}
+.color-preset:focus-visible {
+    box-shadow: 0 0 0 3px rgba(45, 145, 87, 0.35);
+}
+
 .filter-field > label {
     display: block;
     font-size: 0.68rem;

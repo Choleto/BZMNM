@@ -79,9 +79,19 @@
         swatch.style.background = hex;
     }
 
+    function setSolidHex(hex) {
+        hiddenColor.value = hex;
+        swatch.style.background = hex;
+    }
+
     hueInput.addEventListener("input", syncColorFromHue);
     hueInput.addEventListener("change", syncColorFromHue);
     syncColorFromHue();
+
+    var presetBlack = document.getElementById("color-preset-black");
+    var presetWhite = document.getElementById("color-preset-white");
+    if (presetBlack) presetBlack.addEventListener("click", function () { setSolidHex("#000000"); });
+    if (presetWhite) presetWhite.addEventListener("click", function () { setSolidHex("#ffffff"); });
 })();
 
 (function () {
