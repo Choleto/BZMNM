@@ -114,63 +114,12 @@ def allowed_file(filename):
 # Създаване на таблици и миграции „на ръка“ за липсващи колони
 # =============================================================================
 
-def ensure_schema():
-    """Добавя липсващи колони за съществуващи PostgreSQL бази (create_all не променя стари таблици)."""
-    with app.app_context():
-        db.session.execute(
-            text(
-                "ALTER TABLE clothes ADD COLUMN IF NOT EXISTS times_worn INTEGER NOT NULL DEFAULT 0"
-            )
-        )
-        db.session.execute(
-            text("ALTER TABLE clothes ADD COLUMN IF NOT EXISTS date_added VARCHAR(10)")
-        )
-        db.session.execute(
-            text(
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS profile_pic_path VARCHAR(255)'
-            )
-        )
-        db.session.execute(
-            text(
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS donate_marked_count INTEGER DEFAULT 0'
-            )
-        )
-        db.session.execute(
-            text(
-                "ALTER TABLE clothes ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active'"
-            )
-        )
-        db.session.commit()
-        # Попълване на date_added за стари редове
-        for row in Clothes.query.filter(Clothes.date_added.is_(None)).all():
-            row.date_added = row.last_worn_date or date.today().isoformat()
-        db.session.commit()
-
-
 def init_db():
     """Създава таблиците в базата, ако още не съществуват."""
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     os.makedirs(AVATAR_FOLDER, exist_ok=True)
     with app.app_context():
         db.create_all()
-        ensure_schema()
-
-
-@app.context_processor
-def inject_user_extras():
-    """Стойности, които преди бяха в localStorage / само в шаблони."""
-    uid = session.get("user_id")
-    if not uid:
-        return {}
-    user = db.session.get(User, uid)
-    if not user:
-        return {}
-    pic = user.profile_pic_path
-    return {
-        "donate_count": user.donate_marked_count or 0,
-        "profile_pic_url": url_for("static", filename=pic) if pic else None,
-    }
-
 
 def login_required(view):
     """Декоратор: страницата е достъпна само за влезли потребители."""
