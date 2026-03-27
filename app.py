@@ -339,6 +339,17 @@ def ai_chat():
 
     if not user_message:
         return jsonify({"error": "Няма съобщение"}), 400
+    
+    clothes_list = Clothes.query.filter_by(user_id=session["user_id"]).all()
+    clothes_data = []
+    for item in clothes_list:
+        clothes_data.append({
+            'id': item.id,
+            'type': item.type,
+            'color': item.color,
+            'last_worn_date': str(item.last_worn_date),
+            'season': getattr(item, 'season', None) or '',
+        })
 
     # Зареждаме историята от сесия
     history = session.get("chat_history", [])
@@ -347,7 +358,12 @@ def ai_chat():
     history.append({"role": "user", "content": user_message})
 
     # Възстановяваме питането към API, включително системния промпт и историята
-    conversation_text = [f"System: {AI_SYSTEM_PROMPT}", ""]
+    conversation_text = [
+        f"System: {AI_SYSTEM_PROMPT}",
+        f"Дрехи на потребителя: {clothes_data}",  # <- това липсва
+        ""
+    ]
+    
     if history:
         conversation_lines = []
         for entry in history:
@@ -376,6 +392,7 @@ def ai_chat():
         history = history[-max_history_items:]
 
     session["chat_history"] = history
+    session.modified = True
 
     return jsonify({"reply": ai_reply})
 
@@ -416,6 +433,28 @@ def delete_item(item_id):
         flash("Item removed from your wardrobe.", "success")
     
     return redirect(url_for("wardrobe"))
+
+
+@app.route('/export_clothes', methods=['GET'])
+@login_required
+def export_clothes():
+    """Exports the current user's clothes data as JSON."""
+    clothes_list = Clothes.query.filter_by(user_id=session["user_id"]).all()
+    
+    # Build a list of dictionaries (similar to how wardrobe builds all_items)
+    data = []
+    for item in clothes_list:
+        data.append({
+            'id': item.id,
+            'type': item.type,
+            'color': item.color,
+            'image_path': item.image_path,
+            'last_worn_date': item.last_worn_date,
+            'season': getattr(item, 'season', None) or '',
+        })
+    
+    # Return as JSON (like the chat endpoint)
+    return jsonify(data)
 
 
 @app.route("/map")
