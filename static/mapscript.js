@@ -93,6 +93,44 @@ var DONATION_LAYER_ID = 'donation-points-circle';
 var mapPopup = new maptilersdk.Popup({ closeOnClick: true, closeButton: true, maxWidth: '280px', offset: 10 });
 var donationLayerBound = false;
 
+function getDistance(lat1, lon1, lat2, lon2) {
+    var R = 6371; // Радиус на земята в км
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+map.on('load', function () {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            var userLat = position.coords.latitude;
+            var userLng = position.coords.longitude;
+
+            // 1. Центрираме картата върху потребителя
+            map.flyTo({ center: [userLng, userLat], zoom: 12 });
+
+            // 2. Сортираме масива по близост
+            donationPoints.sort(function (a, b) {
+                var distA = getDistance(userLat, userLng, a.lat, a.lng);
+                var distB = getDistance(userLat, userLng, b.lat, b.lng);
+                return distA - distB;
+            });
+
+            // 3. Показваме сортираните локации
+            showLocationsOnMap(donationPoints);
+        }, function() {
+            // Ако потребителят откаже локация, показваме списъка по подразбиране
+            showLocationsOnMap(donationPoints);
+        });
+    } else {
+        showLocationsOnMap(donationPoints);
+    }
+});
+
 function placesToGeoJSON(places) {
     return {
         type: 'FeatureCollection',
