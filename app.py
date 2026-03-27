@@ -6,16 +6,19 @@
 
 import os
 from datetime import date
+from urllib import response
 
 # Външни библиотеки: Flask (уеб), SQLAlchemy (база), сигурност на пароли и файлове
 from dotenv import load_dotenv
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
+from google import genai
 from sqlalchemy import inspect, text
 
 from flask import (
     Flask,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -40,6 +43,7 @@ if not database_url:
         "(e.g. DATABASE_URL=postgresql://user:password@localhost:5432/yourdb)."
     )
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 # Тайни ключ за подписани бисквитки (сесия); в продукция задължително сменете!
 app.secret_key = "change-this-secret-key-for-production"
 # При промяна на HTML шаблоните да се презареждат без рестарт
@@ -298,12 +302,71 @@ def wardrobe():
     all_items=all_items,
 )
 
+AI_SYSTEM_PROMPT = (
+    "You are a friendly and helpful wardrobe assistant for a sustainable clothing app. "
+    "Guide users on outfit choices, clothing care, donations, and eco-friendly styling tips. "
+    "Answer briefly and clearly in Bulgarian if the user writes in Bulgarian, otherwise in English."
+)
+
 @app.route("/Ai_assistant")
 @login_required
 def ai_assistant():
     """Страница за AI асистент."""
-    return render_template("chat.html", username=session.get("username"))
+    # Запазваме историята в сесията (signed cookie)
+    history = session.get("chat_history", [])
+    return render_template(
+        "chat.html",
+        username=session.get("username"),
+        chat_history=history,
+    )
 
+@app.route('/Ai_assistant/chat', methods=["POST"])
+@login_required
+def ai_chat():
+    """Страница за чат с AI асистент."""
+    user_message = request.json.get("message")
+
+    if not user_message:
+        return jsonify({"error": "Няма съобщение"}), 400
+
+    # Зареждаме историята от сесия
+    history = session.get("chat_history", [])
+
+    # Добавяме новото потребителско съобщение към историята (за генериране)
+    history.append({"role": "user", "content": user_message})
+
+    # Възстановяваме питането към API, включително системния промпт и историята
+    conversation_text = [f"System: {AI_SYSTEM_PROMPT}", ""]
+    if history:
+        conversation_lines = []
+        for entry in history:
+            role = entry.get("role", "user").capitalize()
+            content = entry.get("content", "")
+            conversation_lines.append(f"{role}: {content}")
+        conversation_text.append("\n".join(conversation_lines))
+    conversation_text.append("\nAssistant:")
+    prompt_for_model = "\n".join(conversation_text)
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt_for_model,
+        )
+        ai_reply = response.text.strip() if hasattr(response, "text") else str(response)
+    except Exception as exc:
+        return jsonify({"error": "AI service error: %s" % str(exc)}), 500
+
+    # Запомняме отговора
+    history.append({"role": "assistant", "content": ai_reply})
+
+    # Ограничаваме историята до последните 30 съобщения (60 обекта)
+    max_history_items = 60
+    if len(history) > max_history_items:
+        history = history[-max_history_items:]
+
+    session["chat_history"] = history
+
+    return jsonify({"reply": ai_reply})
 
 @app.route("/mark_worn/<int:item_id>", methods=["POST"])
 @login_required

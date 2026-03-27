@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='chat.css') }}">
 </head>
-<body class="chat-body" data-chat-send-url="/chat/message">
+<body class="chat-body" data-chat-send-url="/Ai_assistant/chat">
     {% set active_page = 'chat' %}
     {% include 'includes/app_header.html' %}
 
@@ -20,7 +20,14 @@
         </div>
 
         <div class="chat-panel">
-            <ul class="chat-log" id="chatLog" aria-live="polite"></ul>
+            <ul class="chat-log" id="chatLog" aria-live="polite">
+                {% for entry in chat_history %}
+                    <li class="chat-msg chat-msg--{{ 'user' if entry.role == 'user' else 'ai' }}">
+                        {{ entry.content }}
+                    </li>
+                {% endfor %}
+            </ul>
+
             <form class="chat-form" id="chatForm">
                 <label class="visually-hidden" for="chatInput">Твоето съобщение</label>
                 <textarea id="chatInput" rows="4" placeholder="Напиши нещо…"></textarea>

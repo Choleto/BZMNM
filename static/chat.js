@@ -1,8 +1,5 @@
-/* Чат с AI: изпраща съобщение към сървъра и показва отговора */
 (function () {
-    var url =
-        (document.body && document.body.getAttribute("data-chat-send-url")) ||
-        "/chat/message";
+    var url = "/Ai_assistant/chat";  // директно, без data attribute
     var form = document.getElementById("chatForm");
     var input = document.getElementById("chatInput");
     var log = document.getElementById("chatLog");
