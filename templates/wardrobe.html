@@ -141,6 +141,10 @@
                                         <span class="item-worn-stat__num js-times" data-item-id="{{ item['id'] }}">0</span>
                                         <span class="item-worn-stat__suffix">пъти</span>
                                     </p>
+                                    <p class="muted small item-cost-per-wear">
+                                        <strong>Цена за носене:</strong>
+                                        <span class="js-cost-per-wear">—</span>
+                                    </p>
                                     <button type="button" class="btn-wore-it">Носих я</button>
                                     <!-- Празна форма: при „Носих я“ JS я изпраща към сървъра за дата last_worn -->
                                     <form method="post" action="{{ url_for('mark_worn', item_id=item['id']) }}" id="form-mark-worn-{{ item['id'] }}" class="form-mark-worn-hidden" aria-hidden="true"></form>
@@ -158,13 +162,13 @@
     <script>
     // Локално пазим брой носения и дата на добавяне (не са в базата за брояча).
     (function () {
-        var STORAGE_TIMES = 'wardrobeTimesWorn_v1';
-        var STORAGE_DATES = 'wardrobeDateAdded_v1';
-        var seasonSortNumber = { Spring: 0, Summer: 1, Fall: 2, Winter: 3 };
-        var selectedCategory = 'All';
+        var TIMES_KEY = 'wardrobeTimesWorn_v1';
+        var DATE_KEY = 'wardrobeDateAdded_v1';
+        var PRICES_KEY = 'wardrobePrice_v1';
+        var SEASON_ORDER = { Spring: 0, Summer: 1, Fall: 2, Winter: 3 };
+        var activeFilter = 'All';
 
-        // Чете JSON обект от localStorage или връща празен обект при грешка
-        function loadObjectFromStorage(key) {
+        function load(key) {
             try {
                 var text = localStorage.getItem(key);
                 if (!text) {
@@ -175,190 +179,149 @@
                 return {};
             }
         }
-
-        // Записва обект в localStorage като текст
-        function saveObjectToStorage(key, obj) {
+        function save(key, obj) {
             localStorage.setItem(key, JSON.stringify(obj));
         }
 
-        // Показва запазените броячи „носена“ по data-item-id
-        function fillWearCountsFromStorage() {
-            var timesById = loadObjectFromStorage(STORAGE_TIMES);
-            var allSpans = document.querySelectorAll('.js-times');
-            for (var i = 0; i < allSpans.length; i++) {
-                var itemId = allSpans[i].getAttribute('data-item-id');
-                var saved = timesById[itemId];
-                if (typeof saved === 'number') {
-                    allSpans[i].textContent = saved;
-                } else {
-                    allSpans[i].textContent = 0;
-                }
-            }
-        }
-
-        // Запиши нов брой носения за този артикул
-        function saveWearCount(itemId, newCount) {
-            var timesById = loadObjectFromStorage(STORAGE_TIMES);
-            timesById[String(itemId)] = newCount;
-            saveObjectToStorage(STORAGE_TIMES, timesById);
-        }
-
-        // Ако няма дата на добавяне — задава дата на днес и я пази
-        function fillAddedDatesFromStorage() {
-            var datesById = loadObjectFromStorage(STORAGE_DATES);
-            var allDateSpans = document.querySelectorAll('.js-date-added');
-            for (var i = 0; i < allDateSpans.length; i++) {
-                var itemId = allDateSpans[i].getAttribute('data-item-id');
-                if (!datesById[itemId]) {
-                    datesById[itemId] = new Date().toLocaleDateString('en-CA');
-                    saveObjectToStorage(STORAGE_DATES, datesById);
-                }
-                allDateSpans[i].textContent = datesById[itemId];
-            }
-        }
-
-        // „Носих я“: увеличава брояча, пази го и изпраща формата за дата в базата
-        document.addEventListener('click', function (event) {
-            var woreButton = event.target.closest('.btn-wore-it');
-            if (!woreButton) {
-                return;
-            }
-            var card = woreButton.closest('.item-card');
-            if (!card) {
-                return;
-            }
-            var countSpan = card.querySelector('.js-times');
-            if (!countSpan) {
-                return;
-            }
-            var itemId = countSpan.getAttribute('data-item-id');
-            var oldCount = parseInt(countSpan.textContent, 10);
-            if (isNaN(oldCount)) {
-                oldCount = 0;
-            }
-            var newCount = oldCount + 1;
-            countSpan.textContent = String(newCount);
-            saveWearCount(itemId, newCount);
-            var hiddenForm = document.getElementById('form-mark-worn-' + itemId);
-            if (hiddenForm) {
-                hiddenForm.submit();
-            }
-        });
-
-        // Ред на сезона за подредба: пролет=0 … зима=3; няма сезон → голямо число
-        function sortNumberForSeason(seasonText) {
-            var s = (seasonText || '').trim();
-            if (seasonSortNumber[s] === undefined) {
-                return 999;
-            }
-            return seasonSortNumber[s];
-        }
-
-        // Връща броя носения от обекта или 0
-        function wearCountOrZero(timesById, itemId) {
-            var v = timesById[itemId];
-            if (typeof v === 'number') {
-                return v;
-            }
-            return 0;
-        }
-
-        // Сравнява две карти според избрания режим: сезон или брой носения
-        function sortTwoCards(cardA, cardB, sortMode, timesById) {
-            var idA = cardA.getAttribute('data-item-id');
-            var idB = cardB.getAttribute('data-item-id');
-            if (sortMode === 'season_order') {
-                var orderA = sortNumberForSeason(cardA.getAttribute('data-season'));
-                var orderB = sortNumberForSeason(cardB.getAttribute('data-season'));
-                if (orderA !== orderB) {
-                    return orderA - orderB;
-                }
-                var numA = parseInt(idA, 10);
-                var numB = parseInt(idB, 10);
-                if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
-                    return numA - numB;
-                }
-                return 0;
-            }
-            var wearsA = wearCountOrZero(timesById, idA);
-            var wearsB = wearCountOrZero(timesById, idB);
-            if (sortMode === 'most_worn') {
-                return wearsB - wearsA;
-            }
-            return wearsA - wearsB;
-        }
-
-        // Подрежда DOM елементите в мрежата според падащото меню
-        function sortCardsInGrid() {
-            var grid = document.getElementById('wardrobeGrid');
-            var sortDropdown = document.getElementById('wardrobeSort');
-            if (!grid || !sortDropdown) {
-                return;
-            }
-            var timesById = loadObjectFromStorage(STORAGE_TIMES);
-            var sortMode = sortDropdown.value;
-            var cards = [].slice.call(grid.querySelectorAll('.item-card'));
-            cards.sort(function (cardA, cardB) {
-                return sortTwoCards(cardA, cardB, sortMode, timesById);
-            });
-            for (var j = 0; j < cards.length; j++) {
-                grid.appendChild(cards[j]);
-            }
-        }
-
-        // Показва/крие карти според избраната категория отляво
-        function showOrHideCardsByCategory() {
-            var allCards = document.querySelectorAll('#wardrobeGrid .item-card');
-            var atLeastOneVisible = false;
-            for (var i = 0; i < allCards.length; i++) {
-                var clothingType = allCards[i].getAttribute('data-item-type') || '';
-                var typeMatches = clothingType.toLowerCase().trim() === selectedCategory.toLowerCase().trim();
-                var shouldShow = selectedCategory === 'All' || typeMatches;
-                if (shouldShow) {
-                    allCards[i].style.display = '';
-                    atLeastOneVisible = true;
-                } else {
-                    allCards[i].style.display = 'none';
-                }
-            }
-            var emptyMessage = document.getElementById('wardrobeFilterEmpty');
-            if (emptyMessage) {
-                emptyMessage.hidden = atLeastOneVisible;
-            }
-        }
-
-        // Първо подредба, после филтър (при смяна на подредбата)
-        function sortThenFilter() {
-            sortCardsInGrid();
-            showOrHideCardsByCategory();
-        }
-
-        // Клик по категория: активен бутон и филтър без нова подредба
-        var categoryButtons = document.querySelectorAll('.wardrobe-cat-btn');
-        for (var b = 0; b < categoryButtons.length; b++) {
-            categoryButtons[b].addEventListener('click', function () {
-                var clicked = this;
-                selectedCategory = clicked.getAttribute('data-filter') || 'All';
-                var allBtns = document.querySelectorAll('.wardrobe-cat-btn');
-                for (var k = 0; k < allBtns.length; k++) {
-                    if (allBtns[k] === clicked) {
-                        allBtns[k].classList.add('is-active');
-                    } else {
-                        allBtns[k].classList.remove('is-active');
+        // Price (€) from home form is stored by biggest item id = newest piece. Cost/носене = price ÷ times.
+        function syncPrices() {
+            var prices = load(PRICES_KEY);
+            var pending = sessionStorage.getItem('pendingClothesPrice');
+            if (pending !== null) {
+                sessionStorage.removeItem('pendingClothesPrice');
+                var euro = parseFloat(pending, 10);
+                if (!isNaN(euro) && euro >= 0) {
+                    var newest = 0;
+                    document.querySelectorAll('.item-card').forEach(function (c) {
+                        var id = parseInt(c.getAttribute('data-item-id'), 10) || 0;
+                        if (id > newest) newest = id;
+                    });
+                    if (newest) {
+                        prices[String(newest)] = euro;
+                        save(PRICES_KEY, prices);
                     }
                 }
-                showOrHideCardsByCategory();
+            }
+            document.querySelectorAll('.item-card').forEach(function (card) {
+                var id = card.getAttribute('data-item-id');
+                var times = +((card.querySelector('.js-times') || {}).textContent || 0) || 0;
+                var euro = +(prices[id] || 0);
+                var el = card.querySelector('.js-cost-per-wear');
+                if (el) el.textContent = euro > 0 && times > 0 ? (euro / times).toFixed(2) + ' €' : '—';
             });
         }
 
-        var sortDropdown = document.getElementById('wardrobeSort');
-        if (sortDropdown) {
-            sortDropdown.addEventListener('change', sortThenFilter);
+        function loadTimes() {
+            var t = load(TIMES_KEY);
+            document.querySelectorAll('.js-times').forEach(function (el) {
+                var id = el.getAttribute('data-item-id');
+                el.textContent = typeof t[id] === 'number' ? t[id] : 0;
+            });
+            syncPrices();
         }
 
-        fillWearCountsFromStorage();
-        fillAddedDatesFromStorage();
-        sortThenFilter();
+        function saveTime(itemId, n) {
+            var t = load(TIMES_KEY);
+            t[String(itemId)] = n;
+            save(TIMES_KEY, t);
+        }
+
+        function loadDates() {
+            var d = load(DATE_KEY);
+            document.querySelectorAll('.js-date-added').forEach(function (el) {
+                var id = el.getAttribute('data-item-id');
+                if (!d[id]) {
+                    d[id] = new Date().toLocaleDateString('en-CA');
+                    save(DATE_KEY, d);
+                }
+                el.textContent = d[id];
+            });
+        }
+
+        document.addEventListener('click', function (ev) {
+            var btn = ev.target.closest('.btn-wore-it');
+            if (!btn) return;
+            var card = btn.closest('.item-card');
+            if (!card) return;
+            var span = card.querySelector('.js-times');
+            if (!span) return;
+            var itemId = span.getAttribute('data-item-id');
+            var cur = parseInt(span.textContent, 10) || 0;
+            var next = cur + 1;
+            span.textContent = String(next);
+            saveTime(itemId, next);
+            syncPrices();
+            var form = document.getElementById('form-mark-worn-' + itemId);
+            if (form) form.submit();
+        });
+
+        function seasonRank(s) {
+            s = (s || '').trim();
+            return SEASON_ORDER[s] !== undefined ? SEASON_ORDER[s] : 999;
+        }
+
+        function sortGrid() {
+            var grid = document.getElementById('wardrobeGrid');
+            var select = document.getElementById('wardrobeSort');
+            if (!grid || !select) return;
+            var times = load(TIMES_KEY);
+            var mode = select.value;
+            var cards = [].slice.call(grid.querySelectorAll('.item-card'));
+            cards.sort(function (a, b) {
+                var idA = a.getAttribute('data-item-id');
+                var idB = b.getAttribute('data-item-id');
+                if (mode === 'season_order') {
+                    var ra = seasonRank(a.getAttribute('data-season'));
+                    var rb = seasonRank(b.getAttribute('data-season'));
+                    if (ra !== rb) return ra - rb;
+                    var na = parseInt(idA, 10);
+                    var nb = parseInt(idB, 10);
+                    if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+                    return 0;
+                }
+                var ta = typeof times[idA] === 'number' ? times[idA] : 0;
+                var tb = typeof times[idB] === 'number' ? times[idB] : 0;
+                return mode === 'most_worn' ? tb - ta : ta - tb;
+            });
+            cards.forEach(function (c) {
+                grid.appendChild(c);
+            });
+        }
+
+        function applyCategoryFilter() {
+            var cards = document.querySelectorAll('#wardrobeGrid .item-card');
+            var anyShown = false;
+            for (var i = 0; i < cards.length; i++) {
+                var t = cards[i].getAttribute('data-item-type') || '';
+                var show = activeFilter === 'All' || t.toLowerCase().trim() === activeFilter.toLowerCase().trim();
+                cards[i].style.display = show ? '' : 'none';
+                if (show) anyShown = true;
+            }
+            var msg = document.getElementById('wardrobeFilterEmpty');
+            if (msg) msg.hidden = anyShown;
+        }
+
+        function resort() {
+            sortGrid();
+            applyCategoryFilter();
+        }
+
+        document.querySelectorAll('.wardrobe-cat-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                activeFilter = btn.getAttribute('data-filter') || 'All';
+                document.querySelectorAll('.wardrobe-cat-btn').forEach(function (b) {
+                    b.classList.toggle('is-active', b === btn);
+                });
+                applyCategoryFilter();
+            });
+        });
+
+        var sortSelect = document.getElementById('wardrobeSort');
+        if (sortSelect) sortSelect.addEventListener('change', resort);
+
+        loadTimes();
+        loadDates();
+        resort();
     })();
     </script>
 </body>

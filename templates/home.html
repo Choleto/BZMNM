@@ -156,9 +156,6 @@
                     <input type="file" id="image" name="image" accept="image/*" required>
                 </div>
 
-                <label class="field-label" for="title">Заглавие</label>
-                <input type="text" id="title" name="title" placeholder="Незадължително">
-
                 <div class="filters">
                     <div class="filter-field filter-field-color">
                         <label for="color-hue">Цвят</label>
@@ -198,6 +195,13 @@
                                 <option value="Fall">Есен</option>
                                 <option value="Winter">Зима</option>
                             </select>
+                        </div>
+                    </div>
+                    <div class="filter-field filter-field--full">
+                        <label for="clothes-price">Цена</label>
+                        <div class="filter-input-wrap">
+                            <input type="number" id="clothes-price" min="0" step="0.01" placeholder="0,00" inputmode="decimal" autocomplete="off">
+                            <span class="filter-input-suffix">€</span>
                         </div>
                     </div>
                 </div>
@@ -302,6 +306,12 @@
             hueInput.addEventListener("change", syncColorFromHue);
             syncColorFromHue();
         })();
+
+        document.getElementById("add-clothes").addEventListener("submit", function () {
+            var v = parseFloat(String(document.getElementById("clothes-price").value || "").replace(",", "."), 10);
+            if (!isNaN(v) && v >= 0) sessionStorage.setItem("pendingClothesPrice", String(v));
+            else sessionStorage.removeItem("pendingClothesPrice");
+        });
     </script>
 </body>
 </html>
