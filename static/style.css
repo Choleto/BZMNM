@@ -7,7 +7,21 @@
 
 .container.wide {
     max-width: 1100px;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    padding: 0;         /* hero provides the top; shell provides side padding */
 }
+
+/* restore inner padding for wardrobe content below the hero */
+.container.wide .wardrobe-shell,
+.container.wide .flash-list {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+.container.wide .wardrobe-shell { padding-bottom: 2rem; }
 
 .muted {
     color: #666;
@@ -22,72 +36,44 @@
     margin-top: 1rem;
 }
 
-/* Две колони: странична лента с категории + основна зона */
+/* Wardrobe: single column — sidebar replaced by horizontal chip row */
 .wardrobe-columns {
-    display: grid;
-    grid-template-columns: 188px 1fr;
-    gap: 1.5rem;
-    align-items: start;
+    display: block;
 }
 
-/* На тесен екран категориите отгоре, мрежата отдолу */
-@media (max-width: 720px) {
-    .wardrobe-columns {
-        grid-template-columns: 1fr;
-    }
-}
-
-.wardrobe-sidebar {
-    background: #fff;
-    border-radius: 16px;
-    padding: 1rem 0.75rem;
-    border: 1px solid rgba(15, 23, 42, 0.06);
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
-}
-
-.wardrobe-sidebar-heading {
-    margin: 0 0 0.65rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #71717a;
-}
-
-.wardrobe-cat-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.wardrobe-cat-list li {
-    margin: 0;
+/* ── Horizontal filter chips ── */
+.wardrobe-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0 0 1rem;
 }
 
 .wardrobe-cat-btn {
-    width: 100%;
-    text-align: left;
-    padding: 0.45rem 0.65rem;
-    margin: 0 0 0.2rem;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    background: transparent;
+    padding: 0.4rem 1rem;
+    border: 1.5px solid #e4e4e7;
+    border-radius: 999px;
+    background: #fafafa;
     cursor: pointer;
     font: inherit;
-    font-size: 0.9rem;
-    color: #3f3f46;
-    transition: all 0.2s ease;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #52525b;
+    transition: all 0.18s ease;
+    white-space: nowrap;
 }
 
 .wardrobe-cat-btn:hover {
+    border-color: #a1a1aa;
     background: #f4f4f5;
+    color: #18181b;
 }
 
 .wardrobe-cat-btn.is-active {
-    background: rgba(37, 99, 235, 0.1);
-    border-color: rgba(37, 99, 235, 0.2);
-    color: #1d4ed8;
-    font-weight: 600;
+    background: linear-gradient(135deg, #1e6640 0%, #2d9157 100%);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(30, 102, 64, 0.3);
 }
 
 .wardrobe-main {
@@ -213,20 +199,29 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Адаптивна мрежа от карти с дрехи */
+/* Адаптивна мрежа от карти с дрехи — 4 колони по подразбиране */
 .wardrobe-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
 }
 
+@media (max-width: 1100px) { .wardrobe-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 720px)  { .wardrobe-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px)  { .wardrobe-grid { grid-template-columns: 1fr; } }
+
+/* ── Glassmorphism empty state ── */
 .wardrobe-empty-state {
     text-align: center;
-    padding: 2.5rem 1.5rem;
-    background: #fff;
-    border-radius: 20px;
-    border: 1px dashed rgba(15, 23, 42, 0.12);
-    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.04);
+    padding: 3.5rem 2rem;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 8px 40px rgba(30, 102, 64, 0.08), 0 0 0 1px rgba(30, 102, 64, 0.06);
+    max-width: 460px;
+    margin: 2rem auto;
 }
 
 .wardrobe-empty-state__icon {
@@ -309,26 +304,26 @@
     overflow: hidden;
     background: #fff;
     border: 1px solid rgba(15, 23, 42, 0.06);
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.07);
+    transition: box-shadow 0.22s ease, transform 0.22s ease;
     animation: wardrobe-card-in 0.4s ease backwards;
     animation-delay: calc(var(--card-i, 0) * 0.04s);
 }
 
 .item-card--wardrobe:hover {
-    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.1);
-    transform: translateY(-4px);
+    box-shadow: 0 10px 32px rgba(15, 23, 42, 0.12);
+    transform: translateY(-5px);
 }
 
-/* Photo: full card width, square frame = shorter area + larger image */
+/* Photo: 15px radius on top corners as specified */
 .item-card--wardrobe .item-card-image-wrap {
     margin: 0;
     width: 100%;
-    border-radius: 12px 12px 0 0;
+    border-radius: 15px 15px 0 0;
     overflow: hidden;
     aspect-ratio: 1;
-    background: linear-gradient(145deg, #f4f4f5, #e4e4e7);
+    background: linear-gradient(145deg, #f0f7f2, #e4ede6);
 }
 
 .item-card--wardrobe .item-card-image-wrap img {
