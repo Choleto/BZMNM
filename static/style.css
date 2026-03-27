@@ -129,6 +129,28 @@
     box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45);
 }
 
+.wardrobe-donate-toolbar {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.65rem;
+}
+
+.wardrobe-donate-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #065f46;
+    background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid rgba(5, 150, 105, 0.35);
+    border-radius: 999px;
+    box-shadow: 0 1px 4px rgba(5, 150, 105, 0.15);
+}
+
 .wardrobe-controls {
     display: flex;
     flex-wrap: wrap;
@@ -446,9 +468,18 @@
         align-items: stretch;
     }
 
-    .wardrobe-toolbar-row .wardrobe-add-link,
-    .wardrobe-toolbar-row .btn-donate-clothes {
+    .wardrobe-toolbar-row .wardrobe-add-link {
         width: 100%;
+        justify-content: center;
+    }
+
+    .wardrobe-toolbar-row .wardrobe-donate-toolbar {
+        width: 100%;
+    }
+
+    .wardrobe-toolbar-row .wardrobe-donate-toolbar .btn-donate-clothes {
+        flex: 1;
+        min-width: 0;
         justify-content: center;
     }
 
@@ -544,24 +575,36 @@ button:hover {
     margin: 0 0 0.4rem;
 }
 
-.item-card--wardrobe .btn-delete {
+.item-card--wardrobe .btn-mark-donated {
     width: 100%;
     margin-top: 0;
-    padding: 0.4rem 0.65rem;
+    padding: 0.45rem 0.65rem;
     font-size: 0.8rem;
     font-weight: 600;
     border-radius: 999px;
-    background: #fff;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
-    box-shadow: 0 2px 6px rgba(185, 28, 28, 0.08);
+    cursor: pointer;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    box-shadow: 0 3px 10px rgba(22, 163, 74, 0.35);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
 }
 
-.item-card--wardrobe .btn-delete:hover {
-    background: #fef2f2;
-    color: #991b1b;
-    border-color: #f87171;
+.item-card--wardrobe .btn-mark-donated:hover {
     transform: scale(1.03);
+    box-shadow: 0 5px 16px rgba(22, 163, 74, 0.45);
+    filter: brightness(1.05);
+}
+
+.item-card--wardrobe .btn-mark-donated:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.4);
+    filter: brightness(0.97);
+}
+
+.item-card--wardrobe .btn-mark-donated:focus-visible {
+    outline: 2px solid #16a34a;
+    outline-offset: 2px;
 }
 
 /* Бутон „Носих я“ — вдига локален брояч и изпраща скрита форма към сървъра */

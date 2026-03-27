@@ -3,6 +3,7 @@
     var TIMES_KEY = "wardrobeTimesWorn_v1";
     var DATE_KEY = "wardrobeDateAdded_v1";
     var PRICES_KEY = "wardrobePrice_v1";
+    var DONATE_MARKED_COUNT_KEY = "wardrobeDonateMarkedCount_v1";
     var SEASON_ORDER = { Spring: 0, Summer: 1, Fall: 2, Winter: 3 };
     var activeFilter = "All";
 
@@ -156,7 +157,37 @@
     var sortSelect = document.getElementById("wardrobeSort");
     if (sortSelect) sortSelect.addEventListener("change", resort);
 
+    function getDonateMarkedCount() {
+        try {
+            var n = parseInt(localStorage.getItem(DONATE_MARKED_COUNT_KEY) || "0", 10);
+            return isNaN(n) || n < 0 ? 0 : n;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    function formatDonateMarkedLabel(n) {
+        return "Дрехи дарени: " + n;
+    }
+
+    function setDonateMarkedCountDisplay() {
+        var el = document.getElementById("wardrobeDonateMarkedCount");
+        if (el) el.textContent = formatDonateMarkedLabel(getDonateMarkedCount());
+    }
+
+    document.querySelectorAll(".item-card-delete-form").forEach(function (form) {
+        form.addEventListener("submit", function () {
+            var n = getDonateMarkedCount() + 1;
+            try {
+                localStorage.setItem(DONATE_MARKED_COUNT_KEY, String(n));
+            } catch (e) {}
+            var el = document.getElementById("wardrobeDonateMarkedCount");
+            if (el) el.textContent = formatDonateMarkedLabel(n);
+        });
+    });
+
     loadTimes();
     loadDates();
+    setDonateMarkedCountDisplay();
     resort();
 })();

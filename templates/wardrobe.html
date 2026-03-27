@@ -70,7 +70,10 @@
                 <main class="wardrobe-main">
                     <div class="wardrobe-toolbar-row">
                         <a href="{{ url_for('home') }}" class="wardrobe-add-link">Добави нова+</a>
-                        <a href="{{ url_for('map_page') }}" class="btn-donate-clothes" title="Карта на пунктове за дарения">Дари дреха</a>
+                        <div class="wardrobe-donate-toolbar" title="Брой пъти, в които си маркирал дреха за дарена">
+                            <a href="{{ url_for('map_page') }}" class="btn-donate-clothes" title="Карта на пунктове за дарения">Дари дреха(карта)</a>
+                            <span class="wardrobe-donate-count" id="wardrobeDonateMarkedCount" aria-live="polite">дрехи дарени: 0</span>
+                        </div>
                     </div>
 
                     {% if all_items %}
@@ -124,8 +127,8 @@
                                     </div>
                                     <div class="item-card-body">
                                         <h3 class="item-card-title">{{ title_bg }}</h3>
-                                        <form method="post" action="{{ url_for('delete_item', item_id=item['id']) }}" class="item-card-delete-form" onsubmit="return confirm('Да се премахне ли този артикул от гардероба?');">
-                                            <button type="submit" class="btn-delete">Изтрий</button>
+                                        <form method="post" action="{{ url_for('delete_item', item_id=item['id']) }}" class="item-card-delete-form" onsubmit="return confirm('Тази дреха ще бъде дарена и премахната от гардероба?');">
+                                            <button type="submit" class="btn-mark-donated">Маркирай за дарена</button>
                                         </form>
                                         <p class="item-card-detail small item-card-color-row">
                                             <strong>Цвят:</strong>
