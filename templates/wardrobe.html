@@ -113,7 +113,7 @@
                                 {% set t = item['type'] %}
                                 {% set title_bg = type_bg[t] if t in type_bg else t %}
                                 {% set se = item['season'] or '' %}
-                                <article class="item-card item-card--wardrobe" style="--card-i: {{ loop.index0 }}" data-item-id="{{ item['id'] }}" data-item-type="{{ item['type']|e }}" data-season="{{ se|e }}">
+                                <article class="item-card item-card--wardrobe" style="--card-i: {{ loop.index0 }}" data-item-id="{{ item['id'] }}" data-item-type="{{ item['type']|e }}" data-season="{{ se|e }}" data-price="{{ item['price'] if item['price'] is not none else '' }}">
                                     <div class="item-card-image-wrap">
                                         <img src="{{ url_for('static', filename=item['image_path']) }}" alt="{{ title_bg }}" loading="lazy">
                                     </div>
@@ -140,6 +140,7 @@
                                             {% endif %}
                                         </p>
                                         <p class="muted small">Последно носене: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}няма данни{% endif %}</p>
+                                        <p class="muted small">Цена: {% if item['price'] is not none %}{{ '%.2f'|format(item['price']) }} €{% else %}не е зададена{% endif %}</p>
                                         <p class="small">Дата на добавяне: <span class="js-date-added" data-item-id="{{ item['id'] }}">—</span></p>
                                         <p class="item-worn-stat" aria-live="polite">
                                             <span class="item-worn-stat__icon" aria-hidden="true">👕</span>
@@ -147,10 +148,7 @@
                                             <span class="item-worn-stat__num js-times" data-item-id="{{ item['id'] }}">0</span>
                                             <span class="item-worn-stat__suffix">пъти</span>
                                         </p>
-                                        <p class="muted small item-cost-per-wear">
-                                            <strong>Цена за носене:</strong>
-                                            <span class="js-cost-per-wear">—</span>
-                                        </p>
+                                        <p class="muted small item-cost-per-wear"><strong>Цена за носене (€):</strong> <span class="js-cost-per-wear"></span></p>
                                         <button type="button" class="btn-wore-it">Носих я</button>
                                         <form method="post" action="{{ url_for('mark_worn', item_id=item['id']) }}" id="form-mark-worn-{{ item['id'] }}" class="form-mark-worn-hidden" aria-hidden="true"></form>
                                     </div>

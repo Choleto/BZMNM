@@ -94,13 +94,5 @@
     if (presetWhite) presetWhite.addEventListener("click", function () { setSolidHex("#ffffff"); });
 })();
 
-(function () {
-    var form = document.getElementById("add-clothes");
-    if (!form) return;
-    form.addEventListener("submit", function () {
-        var priceEl = document.getElementById("clothes-price");
-        var v = parseFloat(String(priceEl && priceEl.value ? priceEl.value : "").replace(",", "."), 10);
-        if (!isNaN(v) && v >= 0) sessionStorage.setItem("pendingClothesPrice", String(v));
-        else sessionStorage.removeItem("pendingClothesPrice");
-    });
-})();
+// Price is now saved directly to database via form submission.
+// No sessionStorage handling needed.

@@ -2,7 +2,6 @@
 (function () {
     var TIMES_KEY = "wardrobeTimesWorn_v1";
     var DATE_KEY = "wardrobeDateAdded_v1";
-    var PRICES_KEY = "wardrobePrice_v1";
     var DONATE_MARKED_COUNT_KEY = "wardrobeDonateMarkedCount_v1";
     var SEASON_ORDER = { Spring: 0, Summer: 1, Fall: 2, Winter: 3 };
     var activeFilter = "All";
@@ -21,29 +20,11 @@
     }
 
     function syncPrices() {
-        var prices = load(PRICES_KEY);
-        var pending = sessionStorage.getItem("pendingClothesPrice");
-        if (pending !== null) {
-            sessionStorage.removeItem("pendingClothesPrice");
-            var euro = parseFloat(pending, 10);
-            if (!isNaN(euro) && euro >= 0) {
-                var newest = 0;
-                document.querySelectorAll(".item-card").forEach(function (c) {
-                    var id = parseInt(c.getAttribute("data-item-id"), 10) || 0;
-                    if (id > newest) newest = id;
-                });
-                if (newest) {
-                    prices[String(newest)] = euro;
-                    save(PRICES_KEY, prices);
-                }
-            }
-        }
         document.querySelectorAll(".item-card").forEach(function (card) {
-            var id = card.getAttribute("data-item-id");
             var times = +((card.querySelector(".js-times") || {}).textContent || 0) || 0;
-            var euro = +(prices[id] || 0);
+            var euro = parseFloat(card.getAttribute("data-price")) || 0;
             var el = card.querySelector(".js-cost-per-wear");
-            if (el) el.textContent = euro > 0 && times > 0 ? (euro / times).toFixed(2) + " €" : "—";
+            if (el) el.textContent = euro > 0 && times > 0 ? (euro / times).toFixed(2) : "—";
         });
     }
 

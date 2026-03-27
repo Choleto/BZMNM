@@ -66,7 +66,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     # Един потребител има много дрехи; при изтриване на потребител — изтриват се и дрехите
-    clothes = db.relationship("Clothes", backref="user", lazy=True, cascade="all, delete-orphan")
+    clothes = db.relationship("Clothes", backrefu="ser", lazy=True, cascade="all, delete-orphan")
 
 
 class Clothes(db.Model):
@@ -78,6 +78,8 @@ class Clothes(db.Model):
     last_worn_date = db.Column(db.String(10))  # Дата във формат YYYY-MM-DD
     # Сезон от формата на началната страница: Spring / Summer / Fall / Winter (по избор)
     season = db.Column(db.String(20), nullable=True)
+    # Цена на дрехата (опционално)
+    price = db.Column(db.Float, nullable=True)
 
 
 def allowed_file(filename):
@@ -97,22 +99,6 @@ def init_db():
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     with app.app_context():
         db.create_all()
-
-
-def ensure_clothes_schema():
-    """Добавя колона season, ако таблицата clothes е стара, без тази колона.
-
-    create_all() създава само липсващи таблици; не променя стари таблици.
-    """
-    with app.app_context():
-        inspector = inspect(db.engine)
-        if "clothes" not in inspector.get_table_names():
-            return
-        col_names = {c["name"] for c in inspector.get_columns("clothes")}
-        if "season" in col_names:
-            return
-        db.session.execute(text("ALTER TABLE clothes ADD COLUMN season VARCHAR(20)"))
-        db.session.commit()
 
 
 def login_required(view):
@@ -223,6 +209,17 @@ def upload():
     clothing_type = (request.form.get("type") or "").strip()
     color = (request.form.get("color") or "").strip()
     season = (request.form.get("season") or "").strip() or None
+    
+    # Parse price (optional, can be None)
+    price_str = (request.form.get("price") or "").strip()
+    price = None
+    if price_str:
+        try:
+            price = float(price_str.replace(",", "."))
+            if price < 0:
+                price = None
+        except ValueError:
+            price = None
 
     if file.filename == "":
         flash("Please choose an image file.", "danger")
@@ -253,6 +250,7 @@ def upload():
             type=clothing_type,
             color=color,
             season=season,
+            price=price,
         )
         db.session.add(clothing)
         db.session.commit()
@@ -285,6 +283,7 @@ def wardrobe():
             'image_path': item.image_path,
             'last_worn_date': item.last_worn_date,
             'season': getattr(item, 'season', None) or '',
+            'price': item.price,
         })
 
     # Групиране по вид дреха (напр. всички тениски заедно)
@@ -450,8 +449,9 @@ def export_clothes():
             'color': item.color,
             'image_path': item.image_path,
             'last_worn_date': item.last_worn_date,
-            'season': getattr(item, 'season', None) or '',
-        })
+            'season': getattr(item, 'season', None) or '',            
+            'price': item.price,        
+            })
     
     # Return as JSON (like the chat endpoint)
     return jsonify(data)
@@ -471,7 +471,6 @@ def map_page():
 # Таблиците се създават при импорт. Нужно е при `flask run`, защото тогава
 # не се изпълнява блокът if __name__ == "__main__" и иначе липсват таблици.
 init_db()
-ensure_clothes_schema()
 
 if __name__ == "__main__":
     # debug=True е удобно при разработка; в продукция изключете
