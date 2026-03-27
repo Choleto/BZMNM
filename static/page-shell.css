@@ -44,6 +44,29 @@ body > .page-body {
     width: 100%;
 }
 
+/* Shared site footer (templates/includes/app_footer.html) */
+.app-footer {
+    flex-shrink: 0;
+    width: 100%;
+    margin-top: auto;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.78);
+    background: rgba(0, 0, 0, 0.18);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.app-footer__text {
+    margin: 0;
+}
+
+body.chat-body .app-footer {
+    color: #64748b;
+    background: #eef1f4;
+    border-top: 1px solid #e2e8f0;
+}
+
 /* ── Page hero banner — shared across map & wardrobe ── */
 .page-hero {
     background: linear-gradient(135deg, #1e6640 0%, #2d9157 55%, #4cba78 100%);

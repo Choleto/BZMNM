@@ -32,6 +32,7 @@
     justify-self: start;
 }
 
+/* Same leaf tile gradient as login card (.auth-brand-icon in auth.css) */
 .bc-navbar__logo {
     display: inline-flex;
     align-items: center;
@@ -39,19 +40,22 @@
     width: 40px;
     height: 40px;
     font-size: 1.35rem;
+    line-height: 1;
     text-decoration: none;
     border-radius: 12px;
-    background: rgba(59, 130, 246, 0.08);
-    border: 1px solid rgba(59, 130, 246, 0.12);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    background: linear-gradient(135deg, #1e6640 0%, #2d9157 100%);
+    border: 1px solid rgba(30, 102, 64, 0.45);
+    box-shadow: 0 2px 8px rgba(30, 102, 64, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .bc-navbar__logo:hover {
-    background: rgba(59, 130, 246, 0.14);
+    filter: brightness(1.06);
     transform: scale(1.03);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 4px 14px rgba(30, 102, 64, 0.28);
 }
 
+/* Same brand colors as login (.auth-brand-name / em in auth.css) */
 .bc-navbar__brand {
     grid-column: 2;
     justify-self: center;
@@ -63,7 +67,8 @@
     white-space: nowrap;
 }
 
-.bc-navbar__brand-em {
+.bc-navbar__brand-accent {
+    font-style: normal;
     color: #15803d;
 }
 
@@ -71,7 +76,7 @@
     color: #0f172a;
 }
 
-.bc-navbar__brand:hover .bc-navbar__brand-em {
+.bc-navbar__brand:hover .bc-navbar__brand-accent {
     color: #14532d;
 }
 
