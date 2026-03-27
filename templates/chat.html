@@ -51,10 +51,11 @@
 
             <!-- ── Glassmorphism input area ── -->
             <div class="chat-input-area">
+                <p class="chat-quota" id="chatQuota" hidden></p>
                 <p class="chat-error" id="chatError" hidden role="alert"></p>
                 <form class="chat-form" id="chatForm">
                     <label class="visually-hidden" for="chatInput">Твоето съобщение</label>
-                    <textarea id="chatInput" rows="1" placeholder="Напиши нещо… (Enter за изпращане)"></textarea>
+                    <textarea id="chatInput" rows="1" maxlength="3500" placeholder="Напиши нещо… (Enter за изпращане)"></textarea>
                     <button type="submit" class="chat-send" id="chatSend" aria-label="Изпрати">
                         <!-- Paper-plane send icon -->
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"

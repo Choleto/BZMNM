@@ -5,6 +5,7 @@
     var log    = document.getElementById("chatLog");
     var btn    = document.getElementById("chatSend");
     var err    = document.getElementById("chatError");
+    var quota  = document.getElementById("chatQuota");
     var typing = document.getElementById("chatTyping");
     if (!form || !input || !log || !btn || !err || !typing) return;
 
@@ -78,8 +79,13 @@
             });
             var data = await res.json();
             hideTyping();
-            if (data.reply) {
+            if (res.ok && data.reply) {
                 addLine(false, data.reply);
+                if (quota && typeof data.remaining === "number") {
+                    quota.textContent =
+                        "Остават " + data.remaining + " съобщения днес към AI.";
+                    quota.hidden = false;
+                }
             } else {
                 err.textContent = data.error || data.message || "Нещо се обърка.";
                 err.hidden = false;

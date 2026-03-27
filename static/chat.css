@@ -224,6 +224,12 @@ body.chat-body .app-footer {
     30%           { transform: translateY(-6px); opacity: 1; }
 }
 
+.chat-quota {
+    margin: 0 0 0.4rem;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
 /* ── Input area (glassmorphism bottom strip) ── */
 .chat-input-area {
     flex-shrink: 0;
