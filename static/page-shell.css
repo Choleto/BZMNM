@@ -44,7 +44,7 @@ body > .page-body {
     width: 100%;
 }
 
-/* Shared site footer (templates/includes/app_footer.html) */
+/* Общ долен колонтитул — шаблонът е includes/app_footer.html */
 .app-footer {
     flex-shrink: 0;
     width: 100%;
@@ -67,7 +67,7 @@ body.chat-body .app-footer {
     border-top: 1px solid #e2e8f0;
 }
 
-/* ── Page hero banner — shared across map & wardrobe ── */
+/* Зеленият банер под навигацията — един и същ на картата и в гардероба */
 .page-hero {
     background: linear-gradient(135deg, #1e6640 0%, #2d9157 55%, #4cba78 100%);
     color: #fff;
@@ -77,7 +77,7 @@ body.chat-body .app-footer {
     gap: 1.75rem;
     position: relative;
     overflow: hidden;
-    border-radius: 12px 12px 0 0; /* rounds only the top when inside a card */
+    border-radius: 12px 12px 0 0; /* само горните ъгли, защото седи в бяла „карта“ */
 }
 .page-hero::before {
     content: "";

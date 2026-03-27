@@ -1,22 +1,22 @@
 (function () {
-    var url    = "/Ai_assistant/chat";
-    var form   = document.getElementById("chatForm");
-    var input  = document.getElementById("chatInput");
-    var log    = document.getElementById("chatLog");
-    var btn    = document.getElementById("chatSend");
-    var err    = document.getElementById("chatError");
-    var quota  = document.getElementById("chatQuota");
+    var form = document.getElementById("chatForm");
+    var input = document.getElementById("chatInput");
+    var log = document.getElementById("chatLog");
+    var btn = document.getElementById("chatSend");
+    var err = document.getElementById("chatError");
+    var quota = document.getElementById("chatQuota");
     var typing = document.getElementById("chatTyping");
     if (!form || !input || !log || !btn || !err || !typing) return;
 
-    /* ── Auto-resize textarea to content ── */
+    var url =
+        document.body.getAttribute("data-chat-send-url") || "/Ai_assistant/chat";
+
     function resizeInput() {
         input.style.height = "auto";
         input.style.height = Math.min(input.scrollHeight, 120) + "px";
     }
     input.addEventListener("input", resizeInput);
 
-    /* ── Add a message bubble with icon ── */
     function addLine(isUser, text) {
         var li = document.createElement("li");
         li.className = isUser ? "chat-msg chat-msg--user" : "chat-msg chat-msg--ai";
@@ -27,7 +27,7 @@
 
         var bubble = document.createElement("div");
         bubble.className = "chat-bubble";
-        bubble.textContent = text;   /* textContent — safe, no XSS risk */
+        bubble.textContent = text;
 
         if (isUser) {
             li.appendChild(bubble);
@@ -37,7 +37,6 @@
             li.appendChild(bubble);
         }
 
-        /* Insert before typing indicator so it stays at the bottom */
         log.insertBefore(li, typing);
         scrollToBottom();
     }
@@ -55,7 +54,6 @@
         typing.hidden = true;
     }
 
-    /* ── Submit handler ── */
     form.addEventListener("submit", async function (ev) {
         ev.preventDefault();
         var text = input.value.trim();
@@ -100,7 +98,6 @@
         input.focus();
     });
 
-    /* ── Enter to send, Shift+Enter for new line ── */
     input.addEventListener("keydown", function (ev) {
         if (ev.key !== "Enter") return;
         if (ev.shiftKey) return;
@@ -109,6 +106,5 @@
         form.requestSubmit();
     });
 
-    /* Scroll to bottom on load if there is prior history */
     scrollToBottom();
 })();

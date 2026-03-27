@@ -1,9 +1,7 @@
-/* ── Map page — Eco-Tech Glassmorphism ──────────────────────────────────────
-   Font & body background come from page-shell.css.
-   All structural layout lives here.
-   ──────────────────────────────────────────────────────────────────────── */
+/* Страницата с картата: шрифт и зелен фон са от page-shell.css;
+   тук е „бялата картичка“, мрежата карта/списък и легендата. */
 
-/* ── Outer card ── */
+/* Външната бяла рамка около цялото съдържание */
 .page-container {
     max-width: 1400px;
     margin: 24px auto;
@@ -20,17 +18,17 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── 70 / 30 split — height capped to viewport so list scrolls inside ── */
+/* Карта вляво (~70%), търсене и списък вдясно; височината е ограничена, за да се превърта списъкът */
 .map-split {
     display: grid;
     grid-template-columns: 1fr 340px;
-    /* subtract sticky nav (~64px) + hero (~90px) + outer card margin (24px) */
+    /* приблизително: лента + банер + полетата на външната карта */
     height: calc(100vh - 180px);
     min-height: 480px;
     max-height: 820px;
 }
 
-/* ── Left: map pane ── */
+/* Лявата част: самата карта */
 .map-pane {
     position: relative;
     background: #e8f0ea;
@@ -39,13 +37,13 @@
 
 #map {
     width: 100%;
-    height: 100%;   /* fills the fixed-height pane exactly */
+    height: 100%;   /* запълва зададената височина на панела */
     min-height: unset;
     z-index: 1;
     display: block;
 }
 
-/* ── Floating glassmorphism legend ── */
+/* Легендата — леко „матово стъкло“ върху картата */
 .map-legend-float {
     position: absolute;
     bottom: 20px;
@@ -92,7 +90,7 @@
 .green { background: #22c55e; }
 .blue  { background: #3b82f6; }
 
-/* ── Right: side panel ── */
+/* Дясната колона: търсене и списък */
 .map-side {
     background: #fff;
     border-left: 1px solid rgba(15, 23, 42, 0.07);
@@ -101,7 +99,7 @@
     overflow: hidden;
 }
 
-/* ── Search card ── */
+/* Полето за търсене на локации */
 .map-search-card {
     padding: 20px 20px 16px;
     border-bottom: 1px solid rgba(15, 23, 42, 0.07);
@@ -161,7 +159,7 @@
 }
 .search-box button:active { transform: scale(0.98); }
 
-/* ── Locations list ── */
+/* Превъртащ се списък с намерените пунктове */
 .locations-list {
     flex: 1;
     overflow-y: auto;
@@ -242,7 +240,7 @@
 .type-tag.agency    { background: #22c55e; }
 .type-tag.event     { background: #3b82f6; }
 
-/* ── Map markers ── */
+/* По-стари HTML маркери — ако се ползват някъде */
 .marker {
     width: 28px;
     height: 28px;
@@ -261,7 +259,7 @@
 .marker.agency    { background: #22c55e; }
 .marker.event     { background: #3b82f6; }
 
-/* ── Responsive: stack on narrow screens ── */
+/* На тесен екран картата и списъкът са един под друг */
 @media (max-width: 860px) {
     .map-split {
         grid-template-columns: 1fr;

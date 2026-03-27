@@ -20,15 +20,15 @@
 
 <div class="page-container">
 
-    <!-- Hero banner — matches home page green gradient -->
+    <!-- Зелен банер като на другите вътрешни страници -->
     <div class="page-hero">
         <div class="page-hero-icon">
-            <!-- Location pin -->
+            <!-- Икона: пин с мини закачалка -->
             <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19 3C13.48 3 9 7.48 9 13C9 20.5 19 35 19 35C19 35 29 20.5 29 13C29 7.48 24.52 3 19 3Z"
                       fill="rgba(255,255,255,0.9)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
                 <circle cx="19" cy="13" r="4.5" fill="#2d9157"/>
-                <!-- small clothes hanger inside pin -->
+                <!-- закачалка вътре в пина -->
                 <path d="M19 9.5 L19 10.8" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
                 <path d="M19 10.8 L14.5 14.5 Q14.5 15.5 15.5 15.5 L22.5 15.5 Q23.5 15.5 23.5 14.5 L19 10.8Z"
                       stroke="#fff" stroke-width="1" fill="none" stroke-linejoin="round"/>
@@ -45,15 +45,15 @@
         </div>
     </div>
 
-    <!-- 70/30 split: map left, search + list right -->
+    <!-- Карта вляво, търсене и списък вдясно -->
     <div class="map-split">
 
-        <!-- Left 70%: map + floating legend -->
+        <!-- Лява зона: карта и легенда върху нея -->
         <div class="map-pane">
-            <!-- MapTiler renders here -->
+            <!-- Тук MapTiler рисува картата -->
             <div id="map"></div>
 
-            <!-- Glassmorphism floating legend pinned to bottom-left of map -->
+            <!-- Легенда долу вляво -->
             <div class="map-legend-float" aria-label="Легенда">
                 <h3>Легенда</h3>
                 <div class="legend-item"><span class="dot red"></span> Контейнер БЧК</div>
@@ -62,12 +62,12 @@
             </div>
         </div>
 
-        <!-- Right 30%: search card + scrollable locations list -->
+        <!-- Дясна колона: търсене и списък (логиката е в mapscript.js) -->
         <div class="map-side">
 
             <div class="map-search-card">
                 <h3>Търси локация</h3>
-                <!-- oninput / onclick both call filterLocations() from mapscript.js -->
+                <!-- Полето и бутонът викат filterLocations() -->
                 <div class="search-box">
                     <input type="text" id="addressSearch"
                            placeholder="Град, адрес…"
@@ -76,7 +76,7 @@
                 </div>
             </div>
 
-            <!-- List filled by mapscript.js; #count = number of found places -->
+            <!-- Списъкът се пълни от JS; #count е броят намерени места -->
             <section class="locations-list">
                 <h3>Намерени (<span id="count">0</span>)</h3>
                 <ul id="locationsUl"></ul>

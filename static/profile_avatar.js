@@ -1,4 +1,4 @@
-/* Профилна снимка: качване/премахване през /profile/avatar (виж app.py) */
+/* Профилна снимка от падащото меню — заявките към /profile/avatar са описани в app.py */
 (function () {
     var panel = document.getElementById("bcProfilePanel");
     if (!panel) return;

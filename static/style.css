@@ -12,10 +12,10 @@
     overflow: hidden;
     margin-top: 30px;
     margin-bottom: 30px;
-    padding: 0;         /* hero provides the top; shell provides side padding */
+    padding: 0;         /* горният hero пълни визуално; страничните полета идват от обвивката */
 }
 
-/* restore inner padding for wardrobe content below the hero */
+/* Отстъпи отстрани под банера, за да не залепва текстът за ръбовете */
 .container.wide .wardrobe-shell,
 .container.wide .flash-list {
     padding-left: 1.5rem;
@@ -36,12 +36,12 @@
     margin-top: 1rem;
 }
 
-/* Wardrobe: single column — sidebar replaced by horizontal chip row */
+/* Гардеробът е една колона; филтрите са хоризонтални бутони, не странична лента */
 .wardrobe-columns {
     display: block;
 }
 
-/* ── Horizontal filter chips ── */
+/* Хоризонталните бутони за категория (Всички, Риза, …) */
 .wardrobe-filter-chips {
     display: flex;
     flex-wrap: wrap;
@@ -326,7 +326,7 @@ a.wardrobe-donate-count--back {
 @media (max-width: 720px)  { .wardrobe-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px)  { .wardrobe-grid { grid-template-columns: 1fr; } }
 
-/* ── Glassmorphism empty state ── */
+/* Когато няма дрехи — „матово“ празно състояние по средата */
 .wardrobe-empty-state {
     text-align: center;
     padding: 3.5rem 2rem;
@@ -464,7 +464,7 @@ a.wardrobe-donate-count--back {
     font-size: 0.76rem;
 }
 
-/* Photo: 15px radius on top corners as specified */
+/* Снимката на картата — закръглени само горните ъгли (15px) */
 .item-card--wardrobe .item-card-image-wrap {
     margin: 0;
     width: 100%;
@@ -753,7 +753,7 @@ button:hover {
     box-shadow: 0 6px 18px rgba(5, 150, 105, 0.45);
 }
 
-/* Скрита форма без видими полета — submit от JavaScript */
+/* Скрита форма без полета — изпраща се от скрипта при „Носих я“ */
 .form-mark-worn-hidden {
     display: none;
 }

@@ -1,9 +1,7 @@
-/* ── Auth pages (Login / Register) — Bio Clother Design System ────────────
-   body background (deep forest green) comes from page-shell.css.
-   This file handles the centered card layout, blobs, inputs & button.
-   ──────────────────────────────────────────────────────────────────────── */
+/* Страници за вход и регистрация: зеленият фон е от page-shell.css;
+   тук са подредбата, „мехурите“ на фона, полетата и бутона. */
 
-/* ── Full-height centered wrapper ── */
+/* Центрирана колона, която запълва височината под навигацията */
 .auth-page {
     flex: 1;
     display: flex;
@@ -20,7 +18,7 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Organic background blobs ── */
+/* Меките декоративни петна зад картата — само за атмосфера */
 .auth-blob {
     position: absolute;
     border-radius: 50%;
@@ -48,7 +46,7 @@
     background: rgba(255, 255, 255, 0.04);
 }
 
-/* ── Column: card + footer link ── */
+/* Тясна колона: картата и линкът под нея */
 .auth-card-wrap {
     position: relative;
     z-index: 1;
@@ -60,7 +58,7 @@
     gap: 1.25rem;
 }
 
-/* ── Flash messages above the card ── */
+/* Съобщенията от Flask над картата */
 .auth-flash-list {
     list-style: none;
     padding: 0;
@@ -81,7 +79,7 @@
     line-height: 1.45;
     background: rgba(255, 255, 255, 0.97);
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
-    /* colored left accent strip */
+    /* Цветна ивица отляво според вида съобщение */
     border-left: 4px solid transparent;
     animation: flash-slide-in 0.3s ease;
 }
@@ -91,7 +89,7 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Icon pseudo-element */
+/* Иконка пред текста — чрез ::before */
 .auth-flash-list .flash::before {
     font-size: 1rem;
     flex-shrink: 0;
@@ -116,7 +114,7 @@
 }
 .auth-flash-list .flash-warning::before { content: "!"; color: #f59e0b; font-weight: 700; }
 
-/* ── The premium card ── */
+/* Бялата картичка с формата */
 .auth-card {
     background: #ffffff;
     border-radius: 24px;
@@ -124,7 +122,7 @@
     padding: 2.5rem 2.25rem 2rem;
 }
 
-/* ── Brand row inside card ── */
+/* Редът с листото и името на приложението */
 .auth-brand {
     display: flex;
     align-items: center;
@@ -152,7 +150,7 @@
     color: #15803d;
 }
 
-/* ── Card heading ── */
+/* Заглавие и подзаглавие под логото */
 .auth-card h2 {
     margin: 0 0 0.3rem;
     font-size: 1.5rem;
@@ -168,7 +166,7 @@
     color: #71717a;
 }
 
-/* ── Form fields ── */
+/* Полета за име и парола */
 .auth-field {
     margin-bottom: 1.1rem;
 }
@@ -201,7 +199,7 @@
     box-shadow: 0 0 0 3px rgba(30, 102, 64, 0.14);
 }
 
-/* ── Submit button — Primary Blue ── */
+/* Главният син бутон под формата */
 .auth-btn {
     width: 100%;
     margin-top: 0.35rem;
@@ -224,7 +222,7 @@
 }
 .auth-btn:active { transform: scale(0.98); }
 
-/* ── Footer link below the card ── */
+/* Текстът с линк към другата страница под картата */
 .auth-footer-text {
     text-align: center;
     font-size: 0.88rem;
@@ -242,7 +240,7 @@
     text-decoration: underline;
 }
 
-/* ── Mobile: card fills 90% width ── */
+/* Телефон: малко по-тесни отстъпи */
 @media (max-width: 480px) {
     .auth-card {
         padding: 2rem 1.35rem 1.75rem;

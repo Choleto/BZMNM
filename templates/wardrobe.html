@@ -14,17 +14,17 @@
 
     <div class="container wide">
 
-        <!-- Hero banner — matches home page green gradient -->
+        <!-- Зелен банер в същия стил като на другите страници -->
         <div class="page-hero">
             <div class="page-hero-icon">
-                <!-- Clothes hanger -->
+                <!-- Икона: закачалка -->
                 <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="19" cy="7" r="3.5" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none"/>
                     <path d="M19 10.5 L19 15" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round"/>
                     <path d="M19 15 L5 26 Q5 30 9 30 L29 30 Q33 30 33 26 L19 15Z"
                           stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="rgba(255,255,255,0.15)"
                           stroke-linejoin="round"/>
-                    <!-- small heart on hanger bar -->
+                    <!-- малко сърце на закачалката -->
                     <path d="M19 22 C19 22 16.5 20.2 16.5 18.8 C16.5 18 17.5 17.6 19 19
                              C20.5 17.6 21.5 18 21.5 18.8 C21.5 20.2 19 22 19 22Z" fill="#e8960c"/>
                 </svg>
@@ -59,7 +59,7 @@
             ] %}
 
             {% if wardrobe_view == 'active' %}
-            <!-- Horizontal filter chips — wardrobe.js reads data-filter on .wardrobe-cat-btn -->
+            <!-- Филтър по вид: скриптът гледа атрибута data-filter на всеки бутон -->
             <div class="wardrobe-filter-chips" role="group" aria-label="Категория">
                 {% for key, label in wardrobe_cats %}
                 <button type="button"

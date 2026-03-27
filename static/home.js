@@ -1,4 +1,4 @@
-/* Bio Clothes — home page (templates/home.html): image preview, color hex, pending price */
+/* Начална страница: преглед на снимката, избор на цвят по нюанс (hex), формата праща цената към сървъра */
 
 (function () {
     var input = document.getElementById("image");
@@ -93,6 +93,3 @@
     if (presetBlack) presetBlack.addEventListener("click", function () { setSolidHex("#000000"); });
     if (presetWhite) presetWhite.addEventListener("click", function () { setSolidHex("#ffffff"); });
 })();
-
-// Price is now saved directly to database via form submission.
-// No sessionStorage handling needed.

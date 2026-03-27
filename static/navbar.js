@@ -1,4 +1,4 @@
-/* Мобилно меню; брояч „Дрехи дарени“ от data-donate-count (БД) за елементи с .js-donate-marked-count */
+/* Лентата: хамбургер на телефон; броячът „Дрехи дарени“ идва от data-donate-count в HTML */
 (function () {
     var menuButton = document.getElementById("bcNavToggle");
     var menuPanel = document.getElementById("bcNavMenu");

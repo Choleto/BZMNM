@@ -15,7 +15,7 @@
     <main class="chat-layout">
         <div class="chat-card">
 
-            <!-- ── Card header ── -->
+            <!-- Горна част на картата: икона, заглавие, статус -->
             <div class="chat-card-header">
                 <div class="chat-card-header-icon">🌿</div>
                 <div>
@@ -27,7 +27,7 @@
                 </div>
             </div>
 
-            <!-- ── Scrollable message log ── -->
+            <!-- Съобщенията — превъртат се тук -->
             <ul class="chat-log" id="chatLog" aria-live="polite" aria-label="Разговор">
 
                 {% for entry in chat_history %}
@@ -37,7 +37,7 @@
                     </li>
                 {% endfor %}
 
-                <!-- Typing indicator: shown while AI is generating a reply -->
+                <!-- Три точки, докато AI мисли -->
                 <li class="chat-typing" id="chatTyping" hidden aria-hidden="true">
                     <div class="chat-icon"></div>
                     <div class="chat-bubble">
@@ -49,7 +49,7 @@
 
             </ul>
 
-            <!-- ── Glassmorphism input area ── -->
+            <!-- Долу: поле за писане и изпращане -->
             <div class="chat-input-area">
                 <p class="chat-quota" id="chatQuota" hidden></p>
                 <p class="chat-error" id="chatError" hidden role="alert"></p>
@@ -57,7 +57,7 @@
                     <label class="visually-hidden" for="chatInput">Твоето съобщение</label>
                     <textarea id="chatInput" rows="1" maxlength="3500" placeholder="Напиши нещо… (Enter за изпращане)"></textarea>
                     <button type="submit" class="chat-send" id="chatSend" aria-label="Изпрати">
-                        <!-- Paper-plane send icon -->
+                        <!-- Икона самолетче за изпращане -->
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M22 2 11 13"/>

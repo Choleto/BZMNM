@@ -32,7 +32,7 @@
     justify-self: start;
 }
 
-/* Same leaf tile gradient as login card (.auth-brand-icon in auth.css) */
+/* Градиентът на плочката с листото — като при иконата на картата за вход в auth.css */
 .bc-navbar__logo {
     display: inline-flex;
     align-items: center;
@@ -55,7 +55,7 @@
     box-shadow: 0 4px 14px rgba(30, 102, 64, 0.28);
 }
 
-/* Same brand colors as login (.auth-brand-name / em in auth.css) */
+/* Цветовете на името „Bio Clother“ съвпадат със страниците за вход/регистрация */
 .bc-navbar__brand {
     grid-column: 2;
     justify-self: center;

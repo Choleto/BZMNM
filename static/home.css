@@ -15,17 +15,17 @@
     --shadow-hover:0 6px 20px rgba(0,0,0,0.13);
 }
 
-/* page-shell.css задава flex на body и фона */
+/* Разпределението на body идва от page-shell.css */
 
-/* Мрежа: ляво инфо, дясно форма */
+/* Две колони: вляво текст и илюстрации, вдясно формата */
 .page-body {
     flex: 1;
     display: grid;
     grid-template-columns: 1fr 420px;
-    min-height: calc(100vh - 56px); /* subtract nav height roughly */
+    min-height: calc(100vh - 56px); /* приблизително без височината на лентата */
 }
 
-/* ── LEFT PANEL ── */
+/* Лявият зелен блок */
 .info-panel {
     background: linear-gradient(160deg, var(--green-dark) 0%, var(--green-mid) 55%, var(--green-light) 100%);
     color: #fff;
@@ -354,7 +354,7 @@
     transform: translateY(-30%);
     pointer-events: none;
 }
-/* Вид / Сезон / Цена: shared field look */
+/* Падащи менюта и полето за цена — един и същ визуален стил */
 .select-wrap select,
 .filter-input-wrap input[type="number"] {
     width: 100%;

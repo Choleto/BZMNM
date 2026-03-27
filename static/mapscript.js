@@ -1,5 +1,5 @@
-// Карта с MapTiler: показва пунктове за дарения и списък до картата.
-// Точките са GeoJSON circle layer (WebGL) — без лаг при движение на картата за разлика от HTML Marker.
+// Карта с MapTiler: пунктове за дарения и списък отдясно.
+// Точките са слой с кръгчета върху картата (WebGL), не отделни HTML маркери — по-плавно при движение.
 maptilersdk.config.apiKey = 'PZHz3sbrwnaTYiyd4GSK';
 
 var bulgarianNameForType = {
@@ -104,28 +104,25 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
-map.on('load', function () {
+map.on("load", function () {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function (position) {
-            var userLat = position.coords.latitude;
-            var userLng = position.coords.longitude;
-
-            // 1. Центрираме картата върху потребителя
-            map.flyTo({ center: [userLng, userLat], zoom: 12 });
-
-            // 2. Сортираме масива по близост
-            donationPoints.sort(function (a, b) {
-                var distA = getDistance(userLat, userLng, a.lat, a.lng);
-                var distB = getDistance(userLat, userLng, b.lat, b.lng);
-                return distA - distB;
-            });
-
-            // 3. Показваме сортираните локации
-            showLocationsOnMap(donationPoints);
-        }, function() {
-            // Ако потребителят откаже локация, показваме списъка по подразбиране
-            showLocationsOnMap(donationPoints);
-        });
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                var userLat = position.coords.latitude;
+                var userLng = position.coords.longitude;
+                map.flyTo({ center: [userLng, userLat], zoom: 12 });
+                donationPoints.sort(function (a, b) {
+                    var distA = getDistance(userLat, userLng, a.lat, a.lng);
+                    var distB = getDistance(userLat, userLng, b.lat, b.lng);
+                    return distA - distB;
+                });
+                showLocationsOnMap(donationPoints);
+            },
+            function () {
+                showLocationsOnMap(donationPoints);
+            }
+        );
+        showLocationsOnMap(donationPoints);
     } else {
         showLocationsOnMap(donationPoints);
     }
@@ -287,6 +284,3 @@ function filterLocations() {
     showLocationsOnMap(filteredPlaces);
 }
 
-map.on('load', function () {
-    showLocationsOnMap(donationPoints);
-});
