@@ -151,6 +151,29 @@
     box-shadow: 0 1px 4px rgba(5, 150, 105, 0.15);
 }
 
+a.wardrobe-donate-count {
+    text-decoration: none;
+    color: #065f46;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+a.wardrobe-donate-count:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.22);
+}
+
+a.wardrobe-donate-count--on {
+    border-color: rgba(5, 150, 105, 0.65);
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+}
+
+a.wardrobe-donate-count--back {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.4rem 0.85rem;
+}
+
 .wardrobe-controls {
     display: flex;
     flex-wrap: wrap;

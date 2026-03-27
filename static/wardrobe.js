@@ -99,7 +99,7 @@
     }
 
     var DONATE_CONFIRM_MSG =
-        "Тази дреха ще бъде дарена и премахната от гардероба?";
+        "Да се маркира ли тази дреха като дарена? Ще я видиш в прегледа „Дрехи дарени“.";
 
     document.addEventListener("click", function (ev) {
         var btn = ev.target.closest(".btn-wore-it");

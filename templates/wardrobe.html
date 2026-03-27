@@ -51,12 +51,14 @@
         {% endwith %}
 
         <div class="wardrobe-shell">
+            {% set wardrobe_view = wardrobe_view|default('active') %}
             {% set wardrobe_cats = [
                 ('All', 'Всички'), ('Shirt', 'Риза'), ('T-shirt', 'Тениска'), ('Blouse', 'Блуза'),
                 ('Hoodie', 'Худи'), ('Pants', 'Панталон'), ('Shorts', 'Къси панталони'), ('Dress', 'Рокля'),
                 ('Jacket', 'Яке'), ('Shoes', 'Обувки'), ('Accessory', 'Аксесоар'), ('Other', 'Друго')
             ] %}
 
+            {% if wardrobe_view == 'active' %}
             <!-- Horizontal filter chips — wardrobe.js reads data-filter on .wardrobe-cat-btn -->
             <div class="wardrobe-filter-chips" role="group" aria-label="Категория">
                 {% for key, label in wardrobe_cats %}
@@ -65,18 +67,23 @@
                         data-filter="{{ key }}">{{ label }}</button>
                 {% endfor %}
             </div>
+            {% endif %}
 
             <div class="wardrobe-columns">
                 <main class="wardrobe-main">
                     <div class="wardrobe-toolbar-row">
                         <a href="{{ url_for('home') }}" class="wardrobe-add-link">Добави нова+</a>
-                        <div class="wardrobe-donate-toolbar" title="Брой пъти, в които си маркирал дреха за дарена">
+                        <div class="wardrobe-donate-toolbar" title="Преглед на дарените дрехи">
                             <a href="{{ url_for('map_page') }}" class="btn-donate-clothes" title="Карта на пунктове за дарения">Дари дреха(карта)</a>
-                            <span class="wardrobe-donate-count js-donate-marked-count" aria-live="polite" data-donate-count="{{ donate_count|default(0) }}">Дрехи дарени: {{ donate_count|default(0) }}</span>
+                            {% if wardrobe_view == 'donated' %}
+                            <a href="{{ url_for('wardrobe') }}" class="wardrobe-donate-count wardrobe-donate-count--on wardrobe-donate-count--back" title="Към активния гардероб">Върни се при гардероба</a>
+                            {% else %}
+                            <a href="{{ url_for('wardrobe', view='donated') }}" class="wardrobe-donate-count js-donate-marked-count" aria-live="polite" data-donate-count="{{ donate_count|default(0) }}">Дрехи дарени: {{ donate_count|default(0) }}</a>
+                            {% endif %}
                         </div>
                     </div>
 
-                    {% if all_items %}
+                    {% if all_items and wardrobe_view == 'active' %}
                     <div class="wardrobe-controls" role="region" aria-label="Филтър и подредба">
                         <div class="wardrobe-controls__text">
                             <span class="wardrobe-controls__title">Филтър и подредба</span>
@@ -94,12 +101,21 @@
                     {% endif %}
 
                     {% if not all_items %}
+                        {% if wardrobe_view == 'donated' %}
+                        <div class="wardrobe-empty-state">
+                            <div class="wardrobe-empty-state__icon" aria-hidden="true">🤝</div>
+                            <h2 class="wardrobe-empty-state__title">Няма дарени дрехи</h2>
+                            <p class="wardrobe-empty-state__text">Все още няма маркирани дарения. От активния гардероб можеш да маркираш дреха като дарена.</p>
+                            <a href="{{ url_for('wardrobe') }}" class="wardrobe-add-link wardrobe-add-link--large">Към активните дрехи</a>
+                        </div>
+                        {% else %}
                         <div class="wardrobe-empty-state">
                             <div class="wardrobe-empty-state__icon" aria-hidden="true">👕</div>
                             <h2 class="wardrobe-empty-state__title">Гардеробът е празен</h2>
                             <p class="wardrobe-empty-state__text">Добави първата си дреха от началната страница — качи снимка и започни да следиш носенията.</p>
                             <a href="{{ url_for('home') }}" class="wardrobe-add-link wardrobe-add-link--large">Добави първа дреха</a>
                         </div>
+                        {% endif %}
                     {% else %}
                         {% set type_bg = {
                             'Shirt': 'Риза', 'T-shirt': 'Тениска', 'Blouse': 'Блуза', 'Hoodie': 'Худи',
@@ -127,9 +143,11 @@
                                     </div>
                                     <div class="item-card-body">
                                         <h3 class="item-card-title">{{ title_bg }}</h3>
+                                        {% if wardrobe_view == 'active' %}
                                             <form method="post" action="{{ url_for('donate_item', item_id=item['id']) }}" class="item-card-delete-form">
                                             <button type="submit" class="btn-mark-donated">Маркирай за дарена</button>
                                         </form>
+                                        {% endif %}
                                         <p class="item-card-detail small item-card-color-row">
                                             <strong>Цвят:</strong>
                                             {% set col = item['color'] or '' %}
@@ -139,8 +157,11 @@
                                             <span class="item-color-text">{{ col|e }}</span>
                                             {% endif %}
                                         </p>
+                                        {% if wardrobe_view == 'active' %}
                                         <p class="muted small">Последно носене: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}няма данни{% endif %}</p>
+                                        {% endif %}
                                         <p class="muted small">Цена: {% if item['price'] is not none %}{{ '%.2f'|format(item['price']) }} €{% else %}не е зададена{% endif %}</p>
+                                        {% if wardrobe_view == 'active' %}
                                         <p class="small">Дата на добавяне: <span class="js-date-added" data-item-id="{{ item['id'] }}">{{ item['date_added'] or '—' }}</span></p>
                                         <p class="item-worn-stat" aria-live="polite">
                                             <span class="item-worn-stat__icon" aria-hidden="true">👕</span>
@@ -149,8 +170,11 @@
                                             <span class="item-worn-stat__suffix">пъти</span>
                                         </p>
                                         <p class="muted small item-cost-per-wear"><strong>Цена за носене (€):</strong> <span class="js-cost-per-wear"></span></p>
+                                        {% endif %}
+                                        {% if wardrobe_view == 'active' %}
                                         <button type="button" class="btn-wore-it">Носих я</button>
                                         <form method="post" action="{{ url_for('mark_worn', item_id=item['id']) }}" id="form-mark-worn-{{ item['id'] }}" class="form-mark-worn-hidden" aria-hidden="true"></form>
+                                        {% endif %}
                                     </div>
                                 </article>
                             {% endfor %}

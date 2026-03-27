@@ -85,6 +85,8 @@ class Clothes(db.Model):
     times_worn = db.Column(db.Integer, nullable=False, default=0)
     # Дата на добавяне в гардероба YYYY-MM-DD (преди wardrobeDateAdded_v1)
     date_added = db.Column(db.String(10), nullable=True)
+    # active = в гардероба; donated = маркирана като дарена (остава в БД за преглед)
+    status = db.Column(db.String(20), nullable=False, default="active")
 
 
 def allowed_file(filename):
@@ -118,6 +120,11 @@ def ensure_schema():
         db.session.execute(
             text(
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS donate_marked_count INTEGER DEFAULT 0'
+            )
+        )
+        db.session.execute(
+            text(
+                "ALTER TABLE clothes ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active'"
             )
         )
         db.session.commit()
@@ -304,6 +311,7 @@ def upload():
             season=season,
             price=price,
             date_added=today_str,
+            status="active",
         )
         db.session.add(clothing)
         db.session.commit()
@@ -321,10 +329,17 @@ def wardrobe():
     """
     Списък с дрехите на потребителя, групирани по вид.
     Подредба от базата: първо неносени, после по дата на последно носене.
+    ?view=active — само активни; ?view=donated — само дарени.
     """
-    clothes_list = Clothes.query.filter_by(user_id=session["user_id"]).order_by(
+    view = (request.args.get("view") or "active").strip().lower()
+    if view not in ("active", "donated"):
+        view = "active"
+
+    uid = session["user_id"]
+    q = Clothes.query.filter_by(user_id=uid, status=view).order_by(
         Clothes.last_worn_date.asc()
-    ).all()
+    )
+    clothes_list = q.all()
 
     # За шаблона превръщаме обектите в речници (прости структури)
     all_items = []
@@ -339,6 +354,7 @@ def wardrobe():
             'price': item.price,
             'times_worn': item.times_worn if item.times_worn is not None else 0,
             'date_added': item.date_added or '',
+            'status': getattr(item, 'status', None) or 'active',
         })
 
     # Групиране по вид дреха (напр. всички тениски заедно)
@@ -354,6 +370,7 @@ def wardrobe():
         username=session.get("username"),
         grouped=grouped,
         all_items=all_items,
+        wardrobe_view=view,
     )
 
 AI_SYSTEM_PROMPT = (
@@ -394,7 +411,9 @@ def ai_chat():
     if not user_message:
         return jsonify({"error": "Няма съобщение"}), 400
     
-    clothes_list = Clothes.query.filter_by(user_id=session["user_id"]).all()
+    clothes_list = Clothes.query.filter_by(
+        user_id=session["user_id"], status="active"
+    ).all()
     clothes_data = []
     for item in clothes_list:
         clothes_data.append({
@@ -456,7 +475,9 @@ def mark_worn(item_id):
     """Задава дата „последно носене“ на днес за една дреха (само ако е на този потребител)."""
     today = date.today().isoformat()  # например "2025-03-25"
 
-    item = Clothes.query.filter_by(id=item_id, user_id=session["user_id"]).first()
+    item = Clothes.query.filter_by(
+        id=item_id, user_id=session["user_id"], status="active"
+    ).first()
     if item:
         item.last_worn_date = today
         item.times_worn = (item.times_worn or 0) + 1
@@ -492,22 +513,15 @@ def delete_item(item_id):
 @app.route("/donate_item/<int:item_id>", methods=["POST"])
 @login_required
 def donate_item(item_id):
-    item = Clothes.query.filter_by(id=item_id, user_id=session["user_id"]).first()
+    """Маркира дреха като дарена: само status = donated; файлът и редът остават."""
+    item = Clothes.query.filter_by(
+        id=item_id, user_id=session["user_id"], status="active"
+    ).first()
     if item:
-        full_path = os.path.join(app.root_path, "static", item.image_path)
-        if os.path.isfile(full_path):
-            try:
-                os.remove(full_path)
-            except OSError:
-                pass
-        # Delete the item and flush to ensure the session is updated
-        db.session.delete(item)
-        db.session.flush()
-        
-        # Get and update the user's donation count
+        item.status = "donated"
         user = db.session.get(User, session["user_id"])
         if user:
-            user.donate_marked_count += 1
+            user.donate_marked_count = (user.donate_marked_count or 0) + 1
         db.session.commit()
         flash("Дрехата е маркирана като дарена!", "success")
     return redirect(url_for("wardrobe"))
@@ -584,6 +598,7 @@ def export_clothes():
             'price': item.price,
             'times_worn': item.times_worn if item.times_worn is not None else 0,
             'date_added': item.date_added or '',
+            'status': getattr(item, 'status', None) or 'active',
         })
     
     # Return as JSON (like the chat endpoint)
