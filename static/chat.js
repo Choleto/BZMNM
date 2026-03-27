@@ -48,4 +48,12 @@
         btn.disabled = false;
         input.focus();
     });
+
+    input.addEventListener("keydown", function (ev) {
+        if (ev.key !== "Enter") return;
+        if (ev.shiftKey) return;
+        ev.preventDefault();
+        if (btn.disabled) return;
+        form.requestSubmit();
+    });
 })();
