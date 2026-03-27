@@ -19,7 +19,29 @@
                 <a href="{{ url_for('map_page') }}" class="bc-navbar__link{% if active_page == 'map' %} is-active{% endif %}">Дари</a>
                 <a href="{{ url_for('wardrobe') }}" class="bc-navbar__link{% if active_page == 'wardrobe' %} is-active{% endif %}">Гардероб</a>
                 <a href="{{ url_for('ai_assistant') }}" class="bc-navbar__link{% if active_page == 'chat' %} is-active{% endif %}">Чат с AI</a>
-                <a href="{{ url_for('logout') }}" class="bc-navbar__link bc-navbar__link--logout">Изход</a>
+                <div class="bc-navbar__profile-wrap">
+                    <button type="button" class="bc-navbar__profile-btn" id="bcProfileToggle" aria-expanded="false" aria-haspopup="true" aria-controls="bcProfilePanel">
+                        <span class="bc-navbar__profile-avatar" id="bcNavbarProfileAvatar" aria-hidden="true">
+                            <img class="bc-navbar__profile-avatar-img js-profile-photo" alt="" hidden />
+                            <span class="bc-navbar__profile-avatar-fallback js-profile-photo-fallback"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>
+                        </span>
+                        <small>Профил</small>
+                    </button>
+                    <div id="bcProfilePanel" class="bc-navbar__profile-panel" role="menu" hidden data-user-id="{{ session.get('user_id', '') }}">
+                        <p class="bc-navbar__profile-name">{{ session.get('username', '') }}</p>
+                        <div class="bc-navbar__profile-picture">
+                            <div class="bc-navbar__profile-picture-preview">
+                                <img class="bc-navbar__profile-picture-img js-profile-photo" alt="" hidden />
+                                <span class="bc-navbar__profile-picture-fallback js-profile-photo-fallback" aria-hidden="true">👤</span>
+                            </div>
+                            <label for="bcProfileAvatarInput" class="bc-navbar__profile-picture-choose">Профилна снимка — избери файл</label>
+                            <input type="file" id="bcProfileAvatarInput" accept="image/*" hidden />
+                            <button type="button" class="bc-navbar__profile-picture-remove" id="bcProfileAvatarRemove" hidden>Премахни снимката</button>
+                        </div>
+                        <p class="bc-navbar__profile-donate js-donate-marked-count" aria-live="polite">Дрехи дарени: 0</p>
+                        <a href="{{ url_for('logout') }}" class="bc-navbar__profile-logout" role="menuitem">Изход</a>
+                    </div>
+                </div>
                 {% else %}
                 {% if active_page != 'login' and active_page != 'register' %}
                 <a href="{{ url_for('ai_assistant') }}" class="bc-navbar__link{% if active_page == 'chat' %} is-active{% endif %}">Чат с AI</a>
@@ -59,5 +81,44 @@
             }
         });
     }
+
+    var profileToggle = document.getElementById('bcProfileToggle');
+    var profilePanel = document.getElementById('bcProfilePanel');
+    var profileWrap = document.querySelector('.bc-navbar__profile-wrap');
+    if (profileToggle && profilePanel && profileWrap) {
+        profileToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var willOpen = profilePanel.hidden;
+            profilePanel.hidden = !willOpen;
+            profileToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+        document.addEventListener('click', function (e) {
+            if (profileWrap.contains(e.target)) return;
+            if (!profilePanel.hidden) {
+                profilePanel.hidden = true;
+                profileToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            if (!profilePanel.hidden) {
+                profilePanel.hidden = true;
+                profileToggle.setAttribute('aria-expanded', 'false');
+                profileToggle.focus();
+            }
+        });
+    }
+
+    var donateEls = document.querySelectorAll('.js-donate-marked-count');
+    if (donateEls.length) {
+        var dn = 0;
+        try {
+            dn = parseInt(localStorage.getItem('wardrobeDonateMarkedCount_v1') || '0', 10);
+            if (isNaN(dn) || dn < 0) dn = 0;
+        } catch (e) {}
+        var donateLabel = 'Дрехи дарени: ' + dn;
+        for (var j = 0; j < donateEls.length; j++) donateEls[j].textContent = donateLabel;
+    }
 })();
 </script>
+<script src="{{ url_for('static', filename='profile_avatar.js') }}" defer></script>

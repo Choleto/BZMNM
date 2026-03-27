@@ -147,14 +147,205 @@
     box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
 }
 
-.bc-navbar__link--logout {
-    color: #b91c1c !important;
+/* Профил: бутон + падащо меню с име и изход */
+.bc-navbar__profile-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
-.bc-navbar__link--logout:hover {
-    color: #991b1b !important;
-    background: rgba(185, 28, 28, 0.1) !important;
-    box-shadow: none !important;
+.bc-navbar__profile-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.35rem 0.55rem 0.15rem;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    color: #52525b;
+    border-radius: 999px;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+/* Като другите връзки в лентата: лек фон, не плътно синьо */
+.bc-navbar__profile-btn:hover {
+    background: rgba(37, 99, 235, 0.08);
+    transform: scale(1.03);
+    color: #52525b;
+}
+
+.bc-navbar__profile-btn:hover small {
+    color: #2563eb;
+}
+
+.bc-navbar__profile-avatar {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    color: #3f3f46;
+    background: #e4e4e7;
+    border: 1px solid #d4d4d8;
+    transition: transform 0.2s ease;
+}
+
+.bc-navbar__profile-avatar.has-photo {
+    background: #cbd5e1;
+}
+
+.bc-navbar__profile-avatar-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.bc-navbar__profile-avatar.has-photo .bc-navbar__profile-avatar-fallback {
+    display: none;
+}
+
+.bc-navbar__profile-btn:hover .bc-navbar__profile-avatar {
+    transform: scale(1.05);
+    color: #3f3f46;
+    background: #e4e4e7;
+}
+
+.bc-navbar__profile-btn:hover .bc-navbar__profile-avatar.has-photo {
+    background: #cbd5e1;
+}
+
+.bc-navbar__profile-btn small {
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+
+.bc-navbar__profile-panel {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    right: 0;
+    z-index: 2100;
+    min-width: 220px;
+    padding: 0.85rem 1rem;
+    text-align: center;
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.12);
+}
+
+.bc-navbar__profile-name {
+    margin: 0 0 0.65rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    word-break: break-word;
+}
+
+.bc-navbar__profile-picture {
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.bc-navbar__profile-picture-preview {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 0.6rem;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #e4e4e7;
+    border: 1px solid #d4d4d8;
+}
+
+.bc-navbar__profile-picture-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.bc-navbar__profile-picture-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.bc-navbar__profile-picture-choose {
+    display: inline-block;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #f1f5f9;
+    border-radius: 999px;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+}
+.bc-navbar__profile-picture-choose:hover {
+    color: #475569;
+    background: #e2e8f0;
+}
+.bc-navbar__profile-picture-remove {
+    display: block;
+    width: 100%;
+    margin-top: 0.45rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.bc-navbar__profile-picture-remove:hover {
+    color: #64748b;
+}
+
+.bc-navbar__profile-donate {
+    margin: 0 0 0.75rem;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #f1f5f9;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.bc-navbar__profile-logout {
+    display: block;
+    width: 100%;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #b91c1c;
+    text-decoration: none;
+    background: rgba(185, 28, 28, 0.08);
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.bc-navbar__profile-logout:hover {
+    color: #991b1b;
+    background: rgba(185, 28, 28, 0.14);
 }
 
 /* Под 900px: хамбургер бутон и скрито меню до отваряне */
@@ -202,5 +393,22 @@
 
     .bc-navbar__link {
         text-align: center;
+    }
+
+    .bc-navbar__profile-wrap {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .bc-navbar__profile-btn {
+        width: 100%;
+        padding: 0.5rem 0 0.25rem;
+    }
+
+    .bc-navbar__profile-panel {
+        position: static;
+        margin-top: 0.5rem;
+        width: 100%;
+        box-sizing: border-box;
     }
 }

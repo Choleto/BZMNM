@@ -171,18 +171,26 @@
     }
 
     function setDonateMarkedCountDisplay() {
-        var el = document.getElementById("wardrobeDonateMarkedCount");
-        if (el) el.textContent = formatDonateMarkedLabel(getDonateMarkedCount());
+        var n = getDonateMarkedCount();
+        var text = formatDonateMarkedLabel(n);
+        document.querySelectorAll(".js-donate-marked-count").forEach(function (el) {
+            el.textContent = text;
+        });
     }
 
+    var DONATE_CONFIRM_MSG =
+        "Тази дреха ще бъде дарена и премахната от гардероба?";
+
     document.querySelectorAll(".item-card-delete-form").forEach(function (form) {
-        form.addEventListener("submit", function () {
+        form.addEventListener("submit", function (ev) {
+            ev.preventDefault();
+            if (!confirm(DONATE_CONFIRM_MSG)) return;
             var n = getDonateMarkedCount() + 1;
             try {
                 localStorage.setItem(DONATE_MARKED_COUNT_KEY, String(n));
             } catch (e) {}
-            var el = document.getElementById("wardrobeDonateMarkedCount");
-            if (el) el.textContent = formatDonateMarkedLabel(n);
+            setDonateMarkedCountDisplay();
+            form.submit();
         });
     });
 
