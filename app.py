@@ -298,6 +298,15 @@ def wardrobe():
     all_items=all_items,
 )
 
+@app.route('/Ai_assistant')
+@login_required
+def ai_assistant():
+    """Страница за AI асистент."""
+
+    
+
+    return render_template("chat.html", username=session.get("username"))
+
 @app.route("/mark_worn/<int:item_id>", methods=["POST"])
 @login_required
 def mark_worn(item_id):
