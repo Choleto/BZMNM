@@ -24,7 +24,7 @@
             var times = +((card.querySelector(".js-times") || {}).textContent || 0) || 0;
             var euro = parseFloat(card.getAttribute("data-price")) || 0;
             var el = card.querySelector(".js-cost-per-wear");
-            if (el) el.textContent = euro > 0 && times > 0 ? (euro / times).toFixed(2) : "—";
+            if (el) el.textContent = euro > 0 && times > 0 ? (euro / times).toFixed(2) + " €" : "—";
         });
     }
 

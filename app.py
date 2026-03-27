@@ -6,14 +6,12 @@
 
 import os
 from datetime import date
-from urllib import response
 
 # Външни библиотеки: Flask (уеб), SQLAlchemy (база), сигурност на пароли и файлове
 from dotenv import load_dotenv
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from google import genai
-from sqlalchemy import inspect, text
 
 from flask import (
     Flask,
@@ -65,9 +63,10 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    profile_pic_path = db.Column(db.String(255), nullable=True)
+    donate_marked_count = db.Column(db.Integer, default=0)
     # Един потребител има много дрехи; при изтриване на потребител — изтриват се и дрехите
-    clothes = db.relationship("Clothes", backrefu="ser", lazy=True, cascade="all, delete-orphan")
-
+    clothes = db.relationship("Clothes", backref="user", lazy=True, cascade="all, delete-orphan")
 
 class Clothes(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -284,6 +283,7 @@ def wardrobe():
             'last_worn_date': item.last_worn_date,
             'season': getattr(item, 'season', None) or '',
             'price': item.price,
+
         })
 
     # Групиране по вид дреха (напр. всички тениски заедно)
@@ -299,6 +299,7 @@ def wardrobe():
     username=session.get("username"),
     grouped=grouped,
     all_items=all_items,
+    donate_count=db.session.get(User, session["user_id"]).donate_marked_count,
 )
 
 AI_SYSTEM_PROMPT = (
@@ -420,7 +421,7 @@ def delete_item(item_id):
     
     if item:
         # Премахва снимката от диска
-        full_path = os.path.join(app.root_path, item.image_path)
+        full_path = os.path.join(app.root_path, "static", item.image_path)
         if os.path.isfile(full_path):
             try:
                 os.remove(full_path)
@@ -431,6 +432,29 @@ def delete_item(item_id):
         db.session.commit()
         flash("Item removed from your wardrobe.", "success")
     
+    return redirect(url_for("wardrobe"))
+
+@app.route("/donate_item/<int:item_id>", methods=["POST"])
+@login_required
+def donate_item(item_id):
+    item = Clothes.query.filter_by(id=item_id, user_id=session["user_id"]).first()
+    if item:
+        full_path = os.path.join(app.root_path, "static", item.image_path)
+        if os.path.isfile(full_path):
+            try:
+                os.remove(full_path)
+            except OSError:
+                pass
+        # Delete the item and flush to ensure the session is updated
+        db.session.delete(item)
+        db.session.flush()
+        
+        # Get and update the user's donation count
+        user = db.session.get(User, session["user_id"])
+        if user:
+            user.donate_marked_count += 1
+        db.session.commit()
+        flash("Дрехата е маркирана като дарена!", "success")
     return redirect(url_for("wardrobe"))
 
 
