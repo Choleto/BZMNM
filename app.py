@@ -121,6 +121,24 @@ def init_db():
     with app.app_context():
         db.create_all()
 
+
+@app.context_processor
+def inject_user_extras():
+    """Брояч „Дарени дрехи“ = реален брой редове с status=donated (без drift от delete)."""
+    uid = session.get("user_id")
+    if not uid:
+        return {}
+    user = db.session.get(User, uid)
+    if not user:
+        return {}
+    pic = user.profile_pic_path
+    donated_n = Clothes.query.filter_by(user_id=uid, status="donated").count()
+    return {
+        "donate_count": donated_n,
+        "profile_pic_url": url_for("static", filename=pic) if pic else None,
+    }
+
+
 def login_required(view):
     """Декоратор: страницата е достъпна само за влезли потребители."""
 
@@ -567,9 +585,6 @@ def donate_item(item_id):
     ).first()
     if item:
         item.status = "donated"
-        user = db.session.get(User, session["user_id"])
-        if user:
-            user.donate_marked_count = (user.donate_marked_count or 0) + 1
         db.session.commit()
         flash("Дрехата е маркирана като дарена!", "success")
     return redirect(url_for("wardrobe"))
