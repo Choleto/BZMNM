@@ -1,3 +1,5 @@
 # Bio Clothes — install with: pip install -r requirements.txt
 Flask>=3.0.0
 python-dotenv>=1.0.0
+# За: from google import genai  (Gemini клиент)
+google-genai>=1.0.0
