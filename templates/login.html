@@ -4,39 +4,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BioClother — Вход</title>
+    <title>Bio Clother — Вход</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='page-shell.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='app_header.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
 </head>
 <body>
     {% set active_page = 'login' %}
     {% include 'includes/app_header.html' %}
 
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class="flash-list">
-                    {% for category, message in messages %}
-                        <li class="flash flash-{{ category }}">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
+    <div class="auth-page">
 
-        <!-- Полетата username и password се четат в app.py функция login() -->
-        <form class="card" method="post" action="{{ url_for('login') }}">
-            <h2>Вход</h2>
-            <label for="username">Потребителско име</label>
-            <input type="text" id="username" name="username" required autocomplete="username">
+        <!-- Organic background blobs for depth -->
+        <div class="auth-blob auth-blob--1"></div>
+        <div class="auth-blob auth-blob--2"></div>
+        <div class="auth-blob auth-blob--3"></div>
+        <div class="auth-blob auth-blob--4"></div>
 
-            <label for="password">Парола</label>
-            <input type="password" id="password" name="password" required autocomplete="current-password">
+        <div class="auth-card-wrap">
 
-            <button type="submit">Влез</button>
-        </form>
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <ul class="auth-flash-list">
+                        {% for category, message in messages %}
+                            <li class="flash flash-{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
 
-        <p class="muted">Нямаш акаунт? <a href="{{ url_for('register') }}">Регистрирай се</a></p>
+            <!-- Premium card -->
+            <div class="auth-card">
+
+                <!-- Brand row -->
+                <div class="auth-brand">
+                    <div class="auth-brand-icon">🌿</div>
+                    <span class="auth-brand-name">Bio <em>Clother</em></span>
+                </div>
+
+                <h2>Добре дошъл</h2>
+                <p class="auth-card-subtitle">Влез в своя акаунт</p>
+
+                <!-- username и password се четат в app.py функция login() -->
+                <form method="post" action="{{ url_for('login') }}">
+                    <div class="auth-field">
+                        <label for="username">Потребителско име</label>
+                        <input type="text" id="username" name="username"
+                               placeholder="твоето_потребителско_име"
+                               required autocomplete="username">
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="password">Парола</label>
+                        <input type="password" id="password" name="password"
+                               placeholder="••••••••"
+                               required autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" class="auth-btn">Влез</button>
+                </form>
+            </div>
+
+            <!-- Footer link below the card -->
+            <p class="auth-footer-text">
+                Нямаш акаунт?&nbsp;<a href="{{ url_for('register') }}">Регистрирай се</a>
+            </p>
+
+        </div>
     </div>
 </body>
 </html>
