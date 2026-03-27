@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- Гардероб: списък с дрехи от базата; филтър, подредба, брояч „носена“ в браузъра (localStorage) -->
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
@@ -14,7 +13,6 @@
     {% include 'includes/app_header.html' %}
 
     <div class="container wide">
-        <!-- Съобщения след redirect (успех, грешка) от Flask -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <ul class="flash-list">
@@ -29,19 +27,15 @@
             <div class="wardrobe-columns">
                 <aside class="wardrobe-sidebar">
                     <h3 class="wardrobe-sidebar-heading">Дрехи</h3>
+                    {% set wardrobe_cats = [
+                        ('All', 'Всички'), ('Shirt', 'Риза'), ('T-shirt', 'Тениска'), ('Blouse', 'Блуза'),
+                        ('Hoodie', 'Худи'), ('Pants', 'Панталон'), ('Shorts', 'Къси панталони'), ('Dress', 'Рокля'),
+                        ('Jacket', 'Яке'), ('Shoes', 'Обувки'), ('Accessory', 'Аксесоар'), ('Other', 'Друго')
+                    ] %}
                     <ul class="wardrobe-cat-list">
-                        <li><button type="button" class="wardrobe-cat-btn is-active" data-filter="All">Всички</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Shirt">Риза</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="T-shirt">Тениска</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Blouse">Блуза</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Hoodie">Худи</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Pants">Панталон</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Shorts">Къси панталони</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Dress">Рокля</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Jacket">Яке</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Shoes">Обувки</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Accessory">Аксесоар</button></li>
-                        <li><button type="button" class="wardrobe-cat-btn" data-filter="Other">Друго</button></li>
+                        {% for key, label in wardrobe_cats %}
+                        <li><button type="button" class="wardrobe-cat-btn{% if key == 'All' %} is-active{% endif %}" data-filter="{{ key }}">{{ label }}</button></li>
+                        {% endfor %}
                     </ul>
                 </aside>
 
@@ -76,32 +70,13 @@
                             <a href="{{ url_for('home') }}" class="wardrobe-add-link wardrobe-add-link--large">Добави първа дреха</a>
                         </div>
                     {% else %}
-                        <!-- Превод на тип дреха за показване; season_bg/season_theme за етикети и цветове -->
                         {% set type_bg = {
-                            'Shirt': 'Риза',
-                            'T-shirt': 'Тениска',
-                            'Blouse': 'Блуза',
-                            'Hoodie': 'Худи',
-                            'Pants': 'Панталон',
-                            'Shorts': 'Къси панталони',
-                            'Dress': 'Рокля',
-                            'Jacket': 'Яке',
-                            'Shoes': 'Обувки',
-                            'Accessory': 'Аксесоар',
-                            'Other': 'Друго'
+                            'Shirt': 'Риза', 'T-shirt': 'Тениска', 'Blouse': 'Блуза', 'Hoodie': 'Худи',
+                            'Pants': 'Панталон', 'Shorts': 'Къси панталони', 'Dress': 'Рокля', 'Jacket': 'Яке',
+                            'Shoes': 'Обувки', 'Accessory': 'Аксесоар', 'Other': 'Друго'
                         } %}
-                        {% set season_bg = {
-                            'Spring': 'Пролет',
-                            'Summer': 'Лято',
-                            'Fall': 'Есен',
-                            'Winter': 'Зима'
-                        } %}
-                        {% set season_theme = {
-                            'Spring': 'spring',
-                            'Summer': 'summer',
-                            'Fall': 'fall',
-                            'Winter': 'winter'
-                        } %}
+                        {% set season_bg = {'Spring': 'Пролет', 'Summer': 'Лято', 'Fall': 'Есен', 'Winter': 'Зима'} %}
+                        {% set season_theme = {'Spring': 'spring', 'Summer': 'summer', 'Fall': 'fall', 'Winter': 'winter'} %}
                         <div class="wardrobe-grid" id="wardrobeGrid">
                             {% for item in all_items %}
                                 {% set t = item['type'] %}
@@ -120,34 +95,33 @@
                                         {% endif %}
                                     </div>
                                     <div class="item-card-body">
-                                    <h3 class="item-card-title">{{ title_bg }}</h3>
-                                    <form method="post" action="{{ url_for('delete_item', item_id=item['id']) }}" class="item-card-delete-form" onsubmit="return confirm('Да се премахне ли този артикул от гардероба?');">
-                                        <button type="submit" class="btn-delete">Изтрий</button>
-                                    </form>
-                                    <p class="item-card-detail small item-card-color-row">
-                                        <strong>Цвят:</strong>
-                                        {% set col = item['color'] or '' %}
-                                        {% if col.startswith('#') and col|length >= 4 %}
-                                        <span class="item-color-swatch item-color-swatch--solo" style="background-color: {{ col|e }};" title=""></span>
-                                        {% else %}
-                                        <span class="item-color-text">{{ col|e }}</span>
-                                        {% endif %}
-                                    </p>
-                                    <p class="muted small">Последно носене: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}няма данни{% endif %}</p>
-                                    <p class="small">Дата на добавяне: <span class="js-date-added" data-item-id="{{ item['id'] }}">—</span></p>
-                                    <p class="item-worn-stat" aria-live="polite">
-                                        <span class="item-worn-stat__icon" aria-hidden="true">👕</span>
-                                        <span class="item-worn-stat__label">Носена:</span>
-                                        <span class="item-worn-stat__num js-times" data-item-id="{{ item['id'] }}">0</span>
-                                        <span class="item-worn-stat__suffix">пъти</span>
-                                    </p>
-                                    <p class="muted small item-cost-per-wear">
-                                        <strong>Цена за носене:</strong>
-                                        <span class="js-cost-per-wear">—</span>
-                                    </p>
-                                    <button type="button" class="btn-wore-it">Носих я</button>
-                                    <!-- Празна форма: при „Носих я“ JS я изпраща към сървъра за дата last_worn -->
-                                    <form method="post" action="{{ url_for('mark_worn', item_id=item['id']) }}" id="form-mark-worn-{{ item['id'] }}" class="form-mark-worn-hidden" aria-hidden="true"></form>
+                                        <h3 class="item-card-title">{{ title_bg }}</h3>
+                                        <form method="post" action="{{ url_for('delete_item', item_id=item['id']) }}" class="item-card-delete-form" onsubmit="return confirm('Да се премахне ли този артикул от гардероба?');">
+                                            <button type="submit" class="btn-delete">Изтрий</button>
+                                        </form>
+                                        <p class="item-card-detail small item-card-color-row">
+                                            <strong>Цвят:</strong>
+                                            {% set col = item['color'] or '' %}
+                                            {% if col.startswith('#') and col|length >= 4 %}
+                                            <span class="item-color-swatch item-color-swatch--solo" style="background-color: {{ col|e }};" title=""></span>
+                                            {% else %}
+                                            <span class="item-color-text">{{ col|e }}</span>
+                                            {% endif %}
+                                        </p>
+                                        <p class="muted small">Последно носене: {% if item['last_worn_date'] %}{{ item['last_worn_date'] }}{% else %}няма данни{% endif %}</p>
+                                        <p class="small">Дата на добавяне: <span class="js-date-added" data-item-id="{{ item['id'] }}">—</span></p>
+                                        <p class="item-worn-stat" aria-live="polite">
+                                            <span class="item-worn-stat__icon" aria-hidden="true">👕</span>
+                                            <span class="item-worn-stat__label">Носена:</span>
+                                            <span class="item-worn-stat__num js-times" data-item-id="{{ item['id'] }}">0</span>
+                                            <span class="item-worn-stat__suffix">пъти</span>
+                                        </p>
+                                        <p class="muted small item-cost-per-wear">
+                                            <strong>Цена за носене:</strong>
+                                            <span class="js-cost-per-wear">—</span>
+                                        </p>
+                                        <button type="button" class="btn-wore-it">Носих я</button>
+                                        <form method="post" action="{{ url_for('mark_worn', item_id=item['id']) }}" id="form-mark-worn-{{ item['id'] }}" class="form-mark-worn-hidden" aria-hidden="true"></form>
                                     </div>
                                 </article>
                             {% endfor %}
@@ -159,170 +133,6 @@
         </div>
     </div>
 
-    <script>
-    // Локално пазим брой носения и дата на добавяне (не са в базата за брояча).
-    (function () {
-        var TIMES_KEY = 'wardrobeTimesWorn_v1';
-        var DATE_KEY = 'wardrobeDateAdded_v1';
-        var PRICES_KEY = 'wardrobePrice_v1';
-        var SEASON_ORDER = { Spring: 0, Summer: 1, Fall: 2, Winter: 3 };
-        var activeFilter = 'All';
-
-        function load(key) {
-            try {
-                var text = localStorage.getItem(key);
-                if (!text) {
-                    return {};
-                }
-                return JSON.parse(text);
-            } catch (err) {
-                return {};
-            }
-        }
-        function save(key, obj) {
-            localStorage.setItem(key, JSON.stringify(obj));
-        }
-
-        // Price (€) from home form is stored by biggest item id = newest piece. Cost/носене = price ÷ times.
-        function syncPrices() {
-            var prices = load(PRICES_KEY);
-            var pending = sessionStorage.getItem('pendingClothesPrice');
-            if (pending !== null) {
-                sessionStorage.removeItem('pendingClothesPrice');
-                var euro = parseFloat(pending, 10);
-                if (!isNaN(euro) && euro >= 0) {
-                    var newest = 0;
-                    document.querySelectorAll('.item-card').forEach(function (c) {
-                        var id = parseInt(c.getAttribute('data-item-id'), 10) || 0;
-                        if (id > newest) newest = id;
-                    });
-                    if (newest) {
-                        prices[String(newest)] = euro;
-                        save(PRICES_KEY, prices);
-                    }
-                }
-            }
-            document.querySelectorAll('.item-card').forEach(function (card) {
-                var id = card.getAttribute('data-item-id');
-                var times = +((card.querySelector('.js-times') || {}).textContent || 0) || 0;
-                var euro = +(prices[id] || 0);
-                var el = card.querySelector('.js-cost-per-wear');
-                if (el) el.textContent = euro > 0 && times > 0 ? (euro / times).toFixed(2) + ' €' : '—';
-            });
-        }
-
-        function loadTimes() {
-            var t = load(TIMES_KEY);
-            document.querySelectorAll('.js-times').forEach(function (el) {
-                var id = el.getAttribute('data-item-id');
-                el.textContent = typeof t[id] === 'number' ? t[id] : 0;
-            });
-            syncPrices();
-        }
-
-        function saveTime(itemId, n) {
-            var t = load(TIMES_KEY);
-            t[String(itemId)] = n;
-            save(TIMES_KEY, t);
-        }
-
-        function loadDates() {
-            var d = load(DATE_KEY);
-            document.querySelectorAll('.js-date-added').forEach(function (el) {
-                var id = el.getAttribute('data-item-id');
-                if (!d[id]) {
-                    d[id] = new Date().toLocaleDateString('en-CA');
-                    save(DATE_KEY, d);
-                }
-                el.textContent = d[id];
-            });
-        }
-
-        document.addEventListener('click', function (ev) {
-            var btn = ev.target.closest('.btn-wore-it');
-            if (!btn) return;
-            var card = btn.closest('.item-card');
-            if (!card) return;
-            var span = card.querySelector('.js-times');
-            if (!span) return;
-            var itemId = span.getAttribute('data-item-id');
-            var cur = parseInt(span.textContent, 10) || 0;
-            var next = cur + 1;
-            span.textContent = String(next);
-            saveTime(itemId, next);
-            syncPrices();
-            var form = document.getElementById('form-mark-worn-' + itemId);
-            if (form) form.submit();
-        });
-
-        function seasonRank(s) {
-            s = (s || '').trim();
-            return SEASON_ORDER[s] !== undefined ? SEASON_ORDER[s] : 999;
-        }
-
-        function sortGrid() {
-            var grid = document.getElementById('wardrobeGrid');
-            var select = document.getElementById('wardrobeSort');
-            if (!grid || !select) return;
-            var times = load(TIMES_KEY);
-            var mode = select.value;
-            var cards = [].slice.call(grid.querySelectorAll('.item-card'));
-            cards.sort(function (a, b) {
-                var idA = a.getAttribute('data-item-id');
-                var idB = b.getAttribute('data-item-id');
-                if (mode === 'season_order') {
-                    var ra = seasonRank(a.getAttribute('data-season'));
-                    var rb = seasonRank(b.getAttribute('data-season'));
-                    if (ra !== rb) return ra - rb;
-                    var na = parseInt(idA, 10);
-                    var nb = parseInt(idB, 10);
-                    if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
-                    return 0;
-                }
-                var ta = typeof times[idA] === 'number' ? times[idA] : 0;
-                var tb = typeof times[idB] === 'number' ? times[idB] : 0;
-                return mode === 'most_worn' ? tb - ta : ta - tb;
-            });
-            cards.forEach(function (c) {
-                grid.appendChild(c);
-            });
-        }
-
-        function applyCategoryFilter() {
-            var cards = document.querySelectorAll('#wardrobeGrid .item-card');
-            var anyShown = false;
-            for (var i = 0; i < cards.length; i++) {
-                var t = cards[i].getAttribute('data-item-type') || '';
-                var show = activeFilter === 'All' || t.toLowerCase().trim() === activeFilter.toLowerCase().trim();
-                cards[i].style.display = show ? '' : 'none';
-                if (show) anyShown = true;
-            }
-            var msg = document.getElementById('wardrobeFilterEmpty');
-            if (msg) msg.hidden = anyShown;
-        }
-
-        function resort() {
-            sortGrid();
-            applyCategoryFilter();
-        }
-
-        document.querySelectorAll('.wardrobe-cat-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                activeFilter = btn.getAttribute('data-filter') || 'All';
-                document.querySelectorAll('.wardrobe-cat-btn').forEach(function (b) {
-                    b.classList.toggle('is-active', b === btn);
-                });
-                applyCategoryFilter();
-            });
-        });
-
-        var sortSelect = document.getElementById('wardrobeSort');
-        if (sortSelect) sortSelect.addEventListener('change', resort);
-
-        loadTimes();
-        loadDates();
-        resort();
-    })();
-    </script>
+    <script src="{{ url_for('static', filename='wardrobe.js') }}"></script>
 </body>
 </html>

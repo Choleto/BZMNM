@@ -1,163 +1,35 @@
 <!DOCTYPE html>
-<!--
-  Страница „Чат с AI“: изпраща съобщенията към бекенда;
-  ключът и връзката с AI се държат на сървъра.
--->
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bio Clothes — Чат с AI</title>
-    <!-- Общ изглед (шрифт, body), после лентата за навигация, накрая стиловете само за тази страница -->
     <link rel="stylesheet" href="{{ url_for('static', filename='page-shell.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='app_header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='chat.css') }}">
 </head>
-<body data-chat-message-url="{{ url_for('chat_message') }}">
-    <!--
-      Горна лента: същата структура като в includes/app_header.html.
-      Връзките сочат към основните страници на приложението.
-    -->
-    <header class="bc-navbar" role="banner">
-        <div class="bc-navbar__bar">
-            <!-- Ляво: бутон за меню + икона към началото -->
-            <div class="bc-navbar__start">
-                <button type="button" class="bc-navbar__toggle" id="bcNavToggle" aria-expanded="false" aria-controls="bcNavMenu" aria-label="Отвори менюто">
-                    <span class="bc-navbar__toggle-line"></span>
-                    <span class="bc-navbar__toggle-line"></span>
-                    <span class="bc-navbar__toggle-line"></span>
-                </button>
-                <a href="{{ url_for('home') }}" class="bc-navbar__logo" title="Начало" aria-label="Начало">👕</a>
-            </div>
-            <!-- Централно име на приложението -->
-            <a href="{{ url_for('home') }}" class="bc-navbar__brand">Bio Clother</a>
-            <!-- Основни връзки в навигацията -->
-            <nav class="bc-navbar__menu" id="bcNavMenu" aria-label="Основна навигация">
-                <div class="bc-navbar__links">
-                    <a href="{{ url_for('home') }}#add-clothes" class="bc-navbar__link">Добави дреха</a>
-                    <a href="{{ url_for('map_page') }}" class="bc-navbar__link">Дари</a>
-                    <a href="{{ url_for('wardrobe') }}" class="bc-navbar__link">Гардероб</a>
-                    <a href="{{ url_for('logout') }}" class="bc-navbar__link bc-navbar__link--logout">Изход</a>
-                </div>
-            </nav>
-        </div>
-    </header>
-    <!-- Скрипт за отваряне/затваряне на менюто (като в app_header.html) -->
-    <script>
-    (function () {
-        var menuButton = document.getElementById("bcNavToggle");
-        var menuPanel = document.getElementById("bcNavMenu");
-        if (!menuButton || !menuPanel) return;
-        menuButton.addEventListener("click", function () {
-            var open = menuPanel.classList.toggle("is-open");
-            menuButton.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-    })();
-    </script>
+<body class="chat-body" data-chat-send-url="/chat/message">
+    {% set active_page = 'chat' %}
+    {% include 'includes/app_header.html' %}
 
-    <!-- Основно съдържание на страницата: заглавен бутон + панел за чат -->
-    <div class="chat-page">
-        <!-- Визуален акцент „Чат с AI“ (не изпраща форма; само заглавие) -->
-        <div class="chat-page__top">
-            <button type="button" class="chat-page__title-btn">Чат с AI</button>
+    <main class="chat-layout">
+        <div class="chat-intro">
+            <h1 class="chat-intro__title">Чат с AI</h1>
+            <p class="chat-intro__text">Питай за дрехи, дарения и устойчивост — отговорът идва от сървъра.</p>
         </div>
 
-        <div class="chat-panel" id="chatPanel">
-            <!-- Списък с съобщения: попълва се от JavaScript (потребител / модел) -->
+        <div class="chat-panel">
             <ul class="chat-log" id="chatLog" aria-live="polite"></ul>
-            <!-- Форма: текстът се изпраща към сървъра (бекендът вика AI) -->
-            <form class="chat-form" id="chatForm" autocomplete="off">
-                <!-- Скрит етикет за четци на екрана -->
-                <label class="visually-hidden" for="chatInput">Съобщение към AI</label>
-                <textarea id="chatInput" name="message" rows="2" placeholder="Напиши съобщение…" required></textarea>
+            <form class="chat-form" id="chatForm">
+                <label class="visually-hidden" for="chatInput">Твоето съобщение</label>
+                <textarea id="chatInput" rows="4" placeholder="Напиши нещо…"></textarea>
                 <button type="submit" class="chat-send" id="chatSend">Изпрати</button>
             </form>
-            <!-- Грешки от API или мрежата (показва се само при проблем) -->
             <p class="chat-error" id="chatError" hidden role="alert"></p>
         </div>
-    </div>
+    </main>
 
-    <script>
-    (function () {
-        // URL към сървъра (от атрибута data-chat-message-url на body)
-        var CHAT_MESSAGE_URL =
-            (document.body && document.body.dataset.chatMessageUrl) || "/chat/message";
-        var form = document.getElementById("chatForm");
-        var input = document.getElementById("chatInput");
-        var log = document.getElementById("chatLog");
-        var sendBtn = document.getElementById("chatSend");
-        var errEl = document.getElementById("chatError");
-
-        // Показва или скрива грешката под формата
-        function setError(msg) {
-            if (!errEl) return;
-            if (msg) {
-                errEl.textContent = msg;
-                errEl.hidden = false;
-            } else {
-                errEl.textContent = "";
-                errEl.hidden = true;
-            }
-        }
-
-        // Добавя нов ред в списъка: role = 'user' (вдясно) или 'model' (вляво)
-        function appendBubble(role, text) {
-            var li = document.createElement("li");
-            li.className = "chat-msg " + (role === "user" ? "chat-msg--user" : "chat-msg--model");
-            li.textContent = text;
-            log.appendChild(li);
-            log.scrollTop = log.scrollHeight;
-        }
-
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
-            var text = (input.value || "").trim();
-            if (!text) return;
-
-            setError("");
-            appendBubble("user", text);
-            input.value = "";
-            sendBtn.disabled = true;
-
-            // POST към бекенда: JSON { "message": "..." } → очакваме { "reply": "..." } при успех
-            fetch(CHAT_MESSAGE_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: text }),
-                credentials: "same-origin",
-            })
-                .then(function (res) {
-                    return res.json().then(function (data) {
-                        return { ok: res.ok, data: data };
-                    });
-                })
-                .then(function (r) {
-                    if (!r.ok || !r.data) {
-                        var msg =
-                            (r.data && (r.data.error || r.data.message)) ||
-                            "Грешка от сървъра.";
-                        setError(typeof msg === "string" ? msg : "Грешка от сървъра.");
-                        return;
-                    }
-                    if (r.data.reply) {
-                        appendBubble("model", String(r.data.reply).trim() || "…");
-                        return;
-                    }
-                    if (r.data.error) {
-                        setError(String(r.data.error));
-                        return;
-                    }
-                    setError("Неочакван отговор от сървъра.");
-                })
-                .catch(function () {
-                    setError("Мрежова грешка.");
-                })
-                .then(function () {
-                    sendBtn.disabled = false;
-                    input.focus();
-                });
-        });
-    })();
-    </script>
+    <script src="{{ url_for('static', filename='chat.js') }}"></script>
 </body>
 </html>
