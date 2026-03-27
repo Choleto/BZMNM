@@ -1,8 +1,7 @@
 // Карта с MapTiler: показва пунктове за дарения и списък до картата.
-// Ключът за API е на MapTiler (външна услуга за картите).
+// Точките са GeoJSON circle layer (WebGL) — без лаг при движение на картата за разлика от HTML Marker.
 maptilersdk.config.apiKey = 'PZHz3sbrwnaTYiyd4GSK';
 
-// Как да се покаже типът на пункта на български (container/agency/event)
 var bulgarianNameForType = {
     container: 'Контейнер',
     agency: 'Агенция',
@@ -82,7 +81,6 @@ var donationPoints = [
     { name: "БЧК Контейнер - Център", city: "Каварна", address: "ул. Добротица", lat: 43.4350, lng: 28.3380, type: "container" },
 ];
 
-// Създаване на картата: контейнер #map, стил улици, център България, мащаб 7
 var map = new maptilersdk.Map({
     container: 'map',
     style: maptilersdk.MapStyle.STREETS,
@@ -90,16 +88,113 @@ var map = new maptilersdk.Map({
     zoom: 7,
 });
 
-// Тук пазим маркерите, за да можем да ги махнем преди да нарисуваме нови
-var markersOnMap = [];
+var DONATION_SOURCE_ID = 'donation-points';
+var DONATION_LAYER_ID = 'donation-points-circle';
+var mapPopup = new maptilersdk.Popup({ closeOnClick: true, closeButton: true, maxWidth: '280px', offset: 10 });
+var donationLayerBound = false;
 
-// Чисти старите маркери, пълни списъка и брояча, рисува маркери и редове за всяко място
-function showLocationsOnMap(places) {
-    var i;
-    for (i = 0; i < markersOnMap.length; i++) {
-        markersOnMap[i].remove();
+function placesToGeoJSON(places) {
+    return {
+        type: 'FeatureCollection',
+        features: places.map(function (place) {
+            return {
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [place.lng, place.lat],
+                },
+                properties: {
+                    name: place.name,
+                    address: place.address,
+                    city: place.city,
+                    type: place.type,
+                },
+            };
+        }),
+    };
+}
+
+function bindDonationLayerOnce() {
+    if (donationLayerBound) {
+        return;
     }
-    markersOnMap = [];
+    donationLayerBound = true;
+
+    map.on('click', DONATION_LAYER_ID, function (e) {
+        if (!e.features || !e.features.length) {
+            return;
+        }
+        var p = e.features[0].properties;
+        var html =
+            '<div style="font-family: sans-serif; font-size: 0.85rem;">' +
+            '<strong style="color: #333;">' +
+            p.name +
+            '</strong><br>' +
+            '<small>' +
+            p.address +
+            '</small></div>';
+        mapPopup.setLngLat(e.lngLat).setHTML(html).addTo(map);
+    });
+
+    map.on('mouseenter', DONATION_LAYER_ID, function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', DONATION_LAYER_ID, function () {
+        map.getCanvas().style.cursor = '';
+    });
+}
+
+function ensureDonationLayer(geojson) {
+    if (map.getSource(DONATION_SOURCE_ID)) {
+        map.getSource(DONATION_SOURCE_ID).setData(geojson);
+        return;
+    }
+
+    map.addSource(DONATION_SOURCE_ID, {
+        type: 'geojson',
+        data: geojson,
+    });
+
+    map.addLayer({
+        id: DONATION_LAYER_ID,
+        type: 'circle',
+        source: DONATION_SOURCE_ID,
+        paint: {
+            'circle-radius': 9,
+            'circle-color': [
+                'match',
+                ['get', 'type'],
+                'container',
+                '#ef4444',
+                'agency',
+                '#22c55e',
+                'event',
+                '#3b82f6',
+                '#888888',
+            ],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#ffffff',
+        },
+    });
+
+    bindDonationLayerOnce();
+}
+
+function popupHtmlForPlace(place) {
+    return (
+        '<div style="font-family: sans-serif; font-size: 0.85rem;">' +
+        '<strong style="color: #333;">' +
+        place.name +
+        '</strong><br>' +
+        '<small>' +
+        place.address +
+        '</small></div>'
+    );
+}
+
+function showLocationsOnMap(places) {
+    var geojson = placesToGeoJSON(places);
+    ensureDonationLayer(geojson);
 
     var listElement = document.getElementById('locationsUl');
     listElement.innerHTML = '';
@@ -110,26 +205,6 @@ function showLocationsOnMap(places) {
     }
 
     places.forEach(function (place) {
-        // Точка на картата с клас според типа (цвят от CSS .marker.*)
-        var markerDot = document.createElement('div');
-        markerDot.className = 'marker ' + place.type;
-
-        var popupHtml =
-            '<div style="font-family: sans-serif; font-size: 0.85rem;">' +
-            '<strong style="color: #333;">' +
-            place.name +
-            '</strong><br>' +
-            '<small>' +
-            place.address +
-            '</small></div>';
-
-        var oneMarker = new maptilersdk.Marker({ element: markerDot })
-            .setLngLat([place.lng, place.lat])
-            .setPopup(new maptilersdk.Popup({ offset: 10 }).setHTML(popupHtml))
-            .addTo(map);
-
-        markersOnMap.push(oneMarker);
-
         var tagText = bulgarianNameForType[place.type];
         if (!tagText) {
             tagText = place.type;
@@ -153,17 +228,15 @@ function showLocationsOnMap(places) {
             tagText +
             '</span>';
 
-        // Клик върху реда: приближава картата и отваря балончето
         listRow.onclick = function () {
             map.flyTo({ center: [place.lng, place.lat], zoom: 15 });
-            oneMarker.togglePopup();
+            mapPopup.setLngLat([place.lng, place.lat]).setHTML(popupHtmlForPlace(place)).addTo(map);
         };
 
         listElement.appendChild(listRow);
     });
 }
 
-// Чете полето за търсене и оставя само места, където има съвпадение в град/име/адрес
 function filterLocations() {
     var searchBox = document.getElementById('addressSearch');
     var searchText = searchBox.value.toLowerCase();
@@ -176,7 +249,6 @@ function filterLocations() {
     showLocationsOnMap(filteredPlaces);
 }
 
-// Когато картата е заредена, показваме всички пунктове
 map.on('load', function () {
     showLocationsOnMap(donationPoints);
 });
