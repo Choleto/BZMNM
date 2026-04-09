@@ -93,3 +93,52 @@
     if (presetBlack) presetBlack.addEventListener("click", function () { setSolidHex("#000000"); });
     if (presetWhite) presetWhite.addEventListener("click", function () { setSolidHex("#ffffff"); });
 })();
+
+// Outfit camera button
+(function () {
+    var outfitBtn = document.getElementById("outfitBtn");
+    var outfitInput = document.getElementById("outfitInput");
+    var outfitStatus = document.getElementById("outfitStatus");
+    if (!outfitBtn || !outfitInput) return;
+
+    outfitBtn.addEventListener("click", function () {
+        outfitInput.click();
+    });
+
+    outfitInput.addEventListener("change", async function () {
+        var file = outfitInput.files && outfitInput.files[0];
+        if (!file) return;
+
+        if (outfitStatus) outfitStatus.textContent = "Анализирам...";
+        outfitBtn.disabled = true;
+
+        var formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            var response = await fetch("/Ai_assistant/analyze-outfit", {
+                method: "POST",
+                body: formData
+            });
+            var data = await response.json();
+
+            if (data.error) {
+                if (outfitStatus) outfitStatus.textContent = " " + data.error;
+                return;
+            }
+
+            var summary = data.results.map(function (r) {
+                var name = r.item.color + " " + r.item.type;
+                return r.action === "marked_worn"
+                    ? name + " — отбелязано като облечено"
+                    : name + " — добавено в гардероба";
+            }).join("\n");
+
+            if (outfitStatus) outfitStatus.textContent = summary;
+        } catch (err) {
+            if (outfitStatus) outfitStatus.textContent = " Грешка при свързване със сървъра.";
+        } finally {
+            outfitBtn.disabled = false;
+        }
+    });
+})();

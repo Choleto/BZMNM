@@ -108,7 +108,7 @@
                             <span>Натисни за снимка</span>
                         </div>
                     </label>
-                    <input type="file" id="image" name="image" accept="image/*" required>
+                    <input type="file" id="image" name="image" accept="image/*" capture="environment" required>
                 </div>
 
                 <div class="filters">
@@ -162,7 +162,12 @@
                     </div>
                 </div>
 
-                <button type="submit">Добави в гардероб</button>
+                <div class="button-group">
+                    <button type="submit">Добави в гардероб</button>
+                    <input type="file" id="outfitInput" accept="image/*" capture="environment" style="display:none">
+                    <button type="button" class="button-secondary" id="outfitBtn">Снимай с камера</button>
+                    <p id="outfitStatus"></p>
+                </div>
             </form>
         </div>
     </div>

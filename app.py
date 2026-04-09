@@ -4,7 +4,7 @@
 # =============================================================================
 # Този файл е „сърцето“ на сървъра: връзка с база данни, страници и качване на снимки.
 
-import os
+import os, base64, uuid, json
 from datetime import date, timedelta
 
 # Външни библиотеки: Flask (уеб), SQLAlchemy (база), сигурност на пароли и файлове
@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from google import genai
+from google.genai import types
 
 from flask import (
     Flask,
@@ -149,6 +150,52 @@ def inject_user_extras():
         "profile_pic_url": url_for("static", filename=pic) if pic else None,
     }
 
+def find_wardrobe_match(outfit_image_bytes, mime_type, item_data, user_id):
+    from google.genai import types
+
+    candidates = Clothes.query.filter_by(
+        user_id=user_id,
+        type=item_data["type"],
+        status="active"
+    ).all()
+
+    if not candidates:
+        return None
+
+    for item in candidates:
+        full_path = os.path.join(app.root_path, "static", item.image_path.replace("/", os.sep))
+        if not item.image_path or not os.path.exists(full_path):
+            continue
+
+        with open(full_path, "rb") as f:
+            stored_bytes = f.read()
+
+        prompt_match = f"""
+        The first image is a full outfit photo.
+        The second image is a stored wardrobe item.
+        Focus only on the {item_data['type']} in the first image.
+        Does it match the item in the second image?
+        Consider color, print, graphic, pattern carefully.
+        Two items of the same color but different prints are NOT a match.
+        Reply only with JSON: {{"match": true/false, "confidence": 0-100}}
+        """
+
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.0-flash-lite",
+                contents=[
+                    types.Part.from_bytes(data=outfit_image_bytes, mime_type=mime_type),
+                    types.Part.from_bytes(data=stored_bytes, mime_type="image/jpeg"),
+                    prompt_match
+                ]
+            )
+            result = json.loads(response.text.strip())
+            if result.get("match") and result.get("confidence", 0) >= 80:
+                return item
+        except Exception:
+            continue
+
+    return None
 
 def login_required(view):
     """Декоратор: страницата е достъпна само за влезли потребители."""
@@ -424,6 +471,89 @@ def ai_assistant():
         chat_history=history,
     )
 
+@app.route("/Ai_assistant/analyze-outfit", methods=["POST"])
+@login_required
+def analyze_outfit():
+    from google.genai import types
+
+    image_file = request.files.get("image")
+    if not image_file:
+        return jsonify({"error": "Няма снимка"}), 400
+
+    image_bytes = image_file.read()
+    mime_type = image_file.mimetype
+
+    prompt_segment = """
+    Analyze this photo. If there are no clothing items visible, return an empty array: []
+    Only identify actual clothing items being worn or displayed.
+    Analyze this outfit photo and identify every visible clothing item separately.
+    Return ONLY a JSON array, one object per item:
+    [
+      {
+        "type": "T-shirt",
+        "color": "white",
+        "pattern": "solid",
+        "season": ""
+      }
+    ]
+    Use these exact type values if they match: Shirt, T-shirt, Blouse, Hoodie, Pants, Shorts, Dress, Jacket, Shoes, Accessory.
+    Otherwise use Other.
+    Return only valid JSON, no extra text.
+    """
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash-lite",
+            contents=[
+                types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                prompt_segment
+            ]
+        )
+        detected_items = json.loads(response.text.strip())
+    except Exception as exc:
+        return jsonify({"error": "AI грешка: %s" % str(exc)}), 500
+
+    if not detected_items:
+        return jsonify({"error": "Не открих дрехи в снимката. Опитай с друга снимка."}), 400
+
+    results = []
+
+    for item_data in detected_items:
+        match = find_wardrobe_match(image_bytes, mime_type, item_data, session["user_id"])
+
+        if match:
+            match.times_worn = (match.times_worn or 0) + 1
+            match.last_worn_date = date.today().isoformat()
+            results.append({"action": "marked_worn", "item": item_data, "id": match.id})
+        else:
+            filename = f"{uuid.uuid4()}.jpg"
+            upload_dir = os.path.join("static", "uploads", "wardrobe")
+            os.makedirs(upload_dir, exist_ok=True)
+            save_path = os.path.join(upload_dir, filename)
+            
+            with open(save_path, "wb") as f:
+                f.write(image_bytes)
+
+            # Запазване само на относителния път без "static" префикс  с "/" разделител
+            db_image_path = f"uploads/wardrobe/{filename}"
+            
+            new_item = Clothes(
+                user_id=session["user_id"],
+                type=item_data["type"],
+                color=item_data["color"],
+                season=item_data.get("season") or None,
+                image_path=db_image_path,
+                status="active",
+                times_worn=0,
+                last_worn_date=None,
+                date_added=date.today().isoformat(),
+            )
+            db.session.add(new_item)
+            results.append({"action": "added", "item": item_data})
+
+    db.session.commit()
+    return jsonify({"results": results})
+
 @app.route("/Ai_assistant/chat", methods=["POST"])
 @login_required
 def ai_chat():
@@ -546,7 +676,7 @@ def delete_item(item_id):
     item = Clothes.query.filter_by(id=item_id, user_id=session["user_id"]).first()
 
     if item:
-        full_path = os.path.join(app.root_path, "static", item.image_path)
+        full_path = os.path.join(app.root_path, "static", item.image_path.replace("/", os.sep))
         if os.path.isfile(full_path):
             try:
                 os.remove(full_path)
@@ -666,4 +796,4 @@ init_db()
 
 if __name__ == "__main__":
     # debug=True е удобно при разработка; в продукция изключете
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, host='0.0.0.0')
