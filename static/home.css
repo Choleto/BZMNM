@@ -1,197 +1,221 @@
-/* Начална страница: двуколонен изглед — инфо панел + форма за качване (templates/home.html) */
+/**
+ * WearTrack — начална страница
+ * Променливи: палитра; двуколонен layout, форма.
+ */
 
-/* Цветове и общи променливи за тази страница */
+/* -------------------------------------------------------------------------- */
+/* Design tokens (WearTrack)                                                   */
+/* -------------------------------------------------------------------------- */
 :root {
-    --green-dark:  #1e6640;
-    --green-mid:   #2d9157;
-    --green-light: #4cba78;
-    --amber:       #e8960c;
-    --surface:     #fff;
-    --text:        #1a1a1a;
-    --muted:       #6b6b6b;
-    --border:      #ddd;
-    --radius:      12px;
-    --shadow:      0 2px 8px rgba(0,0,0,0.08);
-    --shadow-hover:0 6px 20px rgba(0,0,0,0.13);
+    --wt-primary: #4f46e5;
+    --wt-secondary: #06b6d4;
+    --wt-bg: #f8fafc;
+    --wt-text: #0f172a;
+    --wt-text-muted: #475569;
+    --wt-border: #e2e8f0;
+    --wt-surface: #ffffff;
+    --wt-radius: 14px;
+    --wt-radius-lg: 16px;
+    --wt-shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+    --wt-shadow-md: 0 8px 32px rgba(15, 23, 42, 0.08);
+    --wt-gradient: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+    --wt-gradient-hover: linear-gradient(135deg, #4338ca 0%, #0891b2 100%);
 }
 
-/* Разпределението на body идва от page-shell.css */
+/* -------------------------------------------------------------------------- */
+/* Two-column: info + form                                                     */
+/* -------------------------------------------------------------------------- */
+.page-home .page-body {
+    min-height: calc(100vh - 56px);
+}
 
-/* Две колони: вляво текст и илюстрации, вдясно формата */
 .page-body {
     flex: 1;
     display: grid;
     grid-template-columns: 1fr 420px;
-    min-height: calc(100vh - 56px); /* приблизително без височината на лентата */
+    min-height: 0;
 }
 
-/* Лявият зелен блок */
 .info-panel {
-    background: linear-gradient(160deg, var(--green-dark) 0%, var(--green-mid) 55%, var(--green-light) 100%);
+    background: linear-gradient(165deg, #4338ca 0%, var(--wt-primary) 45%, #312e81 100%);
     color: #fff;
-    padding: 3rem 2.5rem 3rem 3rem;
+    padding: 2.5rem 2rem 2.5rem 2.5rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 2.5rem;
+    gap: 2rem;
     position: relative;
     overflow: hidden;
 }
 
-/* Леки декоративни кръгове на фона */
 .info-panel::before {
     content: "";
     position: absolute;
-    width: 420px; height: 420px;
+    width: 400px;
+    height: 400px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.06);
-    top: -100px; right: -120px;
+    background: rgba(255, 255, 255, 0.06);
+    top: -100px;
+    right: -100px;
 }
+
 .info-panel::after {
     content: "";
     position: absolute;
-    width: 280px; height: 280px;
+    width: 260px;
+    height: 260px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.05);
-    bottom: -80px; left: -60px;
+    background: rgba(6, 182, 212, 0.12);
+    bottom: -70px;
+    left: -50px;
 }
 
-.panel-headline {
-    position: relative;
-    z-index: 1;
-}
-.panel-headline h2 {
-    font-size: 2rem;
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.03em;
-    margin-bottom: 0.6rem;
-}
-.panel-headline p {
-    font-size: 1rem;
-    opacity: 0.85;
-    max-width: 380px;
-}
-
-/* Карти с икони и кратък текст */
 .illus-grid {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
     position: relative;
     z-index: 1;
 }
+
 .illus-card {
-    background: rgba(255,255,255,0.13);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: var(--radius);
-    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--wt-radius);
+    padding: 1rem 1.2rem;
     display: flex;
     align-items: center;
     gap: 1rem;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+.illus-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
 .illus-card svg {
     flex-shrink: 0;
     width: 56px;
     height: 56px;
 }
+
 .illus-card-text strong {
     display: block;
     font-size: 0.95rem;
     font-weight: 700;
     margin-bottom: 0.2rem;
 }
+
 .illus-card-text span {
     font-size: 0.82rem;
-    opacity: 0.8;
+    opacity: 0.88;
 }
 
-/* Ред с три „статистики“ (емоджита) */
 .stats-row {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
     position: relative;
     z-index: 1;
 }
+
 .stat {
-    background: rgba(255,255,255,0.13);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: var(--radius);
-    padding: 0.75rem 1.1rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--wt-radius);
+    padding: 0.75rem 1rem;
     flex: 1;
     text-align: center;
 }
+
 .stat-num {
     display: block;
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #fff;
-}
-.stat-label {
-    font-size: 0.75rem;
-    opacity: 0.75;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: 1.35rem;
 }
 
-/* Десен панел: бяла област с формата */
+.stat-label {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* Form panel */
 .form-panel {
-    background: var(--surface);
+    background: var(--wt-surface);
     display: flex;
     flex-direction: column;
     align-items: stretch;
     padding: 2.5rem 2rem 3rem;
-    border-left: 1px solid #e4e9e4;
+    border-left: 1px solid var(--wt-border);
     overflow-y: auto;
 }
 
 .form-title {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: var(--green-dark);
+    font-family: "Inter", system-ui, sans-serif;
+    color: var(--wt-primary);
     margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
-.form-title svg { width: 22px; height: 22px; }
+
+.form-title svg {
+    width: 24px;
+    height: 24px;
+}
 
 .flash-list {
     list-style: none;
     padding: 0.75rem 1rem;
     margin: 0 0 1.25rem;
     font-size: 0.88rem;
-    background: #f5fff8;
-    border: 1px solid #b8e6c8;
-    border-radius: var(--radius);
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: var(--wt-radius);
 }
-.flash-danger { color: #b00020; }
-.flash-success { color: #0d6e3a; }
 
-.add-wrap { position: relative; width: 100%; }
+.flash-danger {
+    color: #b91c1c;
+}
+.flash-success {
+    color: #047857;
+}
+
+.add-wrap {
+    position: relative;
+    width: 100%;
+}
+
 .add-box {
     position: relative;
     overflow: hidden;
     width: 100%;
     aspect-ratio: 4/3;
-    background: linear-gradient(145deg, #f0f7f2 0%, #e4f0e8 100%);
-    border-radius: var(--radius);
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: var(--wt-radius);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: var(--shadow);
-    border: 2px dashed #a8d4b8;
+    box-shadow: var(--wt-shadow-sm);
+    border: 2px dashed #cbd5e1;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     gap: 0.5rem;
 }
+
 .add-box:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
-    border-color: var(--green-mid);
+    box-shadow: var(--wt-shadow-md);
+    border-color: rgba(79, 70, 229, 0.45);
 }
+
 .add-box .preview-img {
     display: none;
     position: absolute;
@@ -200,8 +224,13 @@
     height: 100%;
     object-fit: cover;
 }
-.add-box.has-preview .preview-img { display: block; }
-.add-box.has-preview .upload-hint { display: none; }
+
+.add-box.has-preview .preview-img {
+    display: block;
+}
+.add-box.has-preview .upload-hint {
+    display: none;
+}
 
 .upload-hint {
     display: flex;
@@ -209,21 +238,29 @@
     align-items: center;
     gap: 0.4rem;
     pointer-events: none;
+    color: var(--wt-text-muted);
 }
-.upload-hint svg { width: 40px; height: 40px; opacity: 0.5; }
+
+.upload-hint svg {
+    width: 40px;
+    height: 40px;
+    opacity: 0.55;
+    color: var(--wt-primary);
+}
+
 .upload-hint span {
     font-size: 0.82rem;
-    color: var(--muted);
     font-weight: 500;
 }
 
-/* Скрито поле за файл; кликът се пренасочва към етикета .add-box */
 #image {
     position: absolute;
-    width: 1px; height: 1px;
-    padding: 0; margin: -1px;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
     overflow: hidden;
-    clip: rect(0,0,0,0);
+    clip: rect(0, 0, 0, 0);
     border: 0;
 }
 
@@ -233,15 +270,18 @@
     gap: 0.65rem;
     margin-top: 1.1rem;
 }
+
 .filter-field-color,
 .filter-field--full {
     grid-column: 1 / -1;
 }
+
 .color-slider-row {
     display: flex;
     align-items: center;
     gap: 0.65rem;
 }
+
 .hue-slider {
     flex: 1;
     min-width: 0;
@@ -261,25 +301,28 @@
     );
     cursor: pointer;
 }
+
 .hue-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 22px;
     height: 22px;
     border-radius: 50%;
     background: #fff;
-    border: 2px solid rgba(0, 0, 0, 0.25);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
     cursor: grab;
 }
+
 .hue-slider::-moz-range-thumb {
     width: 22px;
     height: 22px;
     border-radius: 50%;
     background: #fff;
-    border: 2px solid rgba(0, 0, 0, 0.25);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
     cursor: grab;
 }
+
 .hue-slider::-moz-range-track {
     height: 14px;
     border-radius: 7px;
@@ -294,43 +337,47 @@
         #f00 100%
     );
 }
+
 .color-swatch {
     flex-shrink: 0;
     width: 40px;
     height: 40px;
-    border-radius: 8px;
-    border: 2px solid var(--border);
+    border-radius: 10px;
+    border: 2px solid var(--wt-border);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
-/* Бърз избор: чисто черно / бяло (нюансовият плъзгач не ги покрива) */
 .color-preset {
     flex-shrink: 0;
     width: 40px;
     height: 40px;
     margin: 0;
     padding: 0;
-    border-radius: 8px;
-    border: 2px solid var(--border);
+    border-radius: 10px;
+    border: 2px solid var(--wt-border);
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
+
 .color-preset--black {
-    background: #000000;
+    background: #000;
 }
 .color-preset--white {
-    background: #ffffff;
+    background: #fff;
     border-color: #d1d5db;
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
+
 .color-preset:hover {
     transform: scale(1.05);
 }
+
 .color-preset:focus {
     outline: none;
 }
+
 .color-preset:focus-visible {
-    box-shadow: 0 0 0 3px rgba(45, 145, 87, 0.35);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
 }
 
 .filter-field > label {
@@ -339,22 +386,28 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--muted);
+    color: var(--wt-text-muted);
     margin-bottom: 0.35rem;
 }
-.select-wrap { position: relative; }
+
+.select-wrap {
+    position: relative;
+}
+
 .select-wrap::after {
     content: "";
     position: absolute;
-    right: 0.65rem; top: 50%;
-    width: 0; height: 0;
+    right: 0.65rem;
+    top: 50%;
+    width: 0;
+    height: 0;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-top: 5px solid var(--muted);
+    border-top: 5px solid var(--wt-text-muted);
     transform: translateY(-30%);
     pointer-events: none;
 }
-/* Падащи менюта и полето за цена — един и същ визуален стил */
+
 .select-wrap select,
 .filter-input-wrap input[type="number"] {
     width: 100%;
@@ -362,40 +415,43 @@
     padding: 0.5rem 0.65rem;
     font: inherit;
     font-size: 0.88rem;
-    color: var(--text);
+    color: var(--wt-text);
     background: #fafafa;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
+    border: 1.5px solid var(--wt-border);
+    border-radius: 10px;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
+
 .select-wrap select {
     padding-right: 1.8rem;
     cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
 }
+
 .filter-input-wrap {
     position: relative;
 }
+
 .filter-input-wrap input[type="number"] {
     padding-right: 2rem;
     -moz-appearance: textfield;
 }
+
 .filter-input-wrap input[type="number"]::-webkit-outer-spin-button,
 .filter-input-wrap input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-.filter-input-wrap input[type="number"]::placeholder {
-    color: #aaa;
-}
+
 .select-wrap select:focus,
 .filter-input-wrap input[type="number"]:focus {
     outline: none;
-    border-color: var(--green-mid);
-    box-shadow: 0 0 0 3px rgba(45,145,87,0.12);
+    border-color: var(--wt-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
     background: #fff;
 }
+
 .filter-input-suffix {
     position: absolute;
     right: 0.65rem;
@@ -403,42 +459,48 @@
     transform: translateY(-50%);
     font-size: 0.88rem;
     font-weight: 600;
-    color: var(--muted);
+    color: var(--wt-text-muted);
     pointer-events: none;
 }
 
 button[type="submit"] {
     margin-top: 1.5rem;
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.8rem 1rem;
     font: inherit;
     font-weight: 700;
     font-size: 0.95rem;
     cursor: pointer;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--wt-radius);
     color: #fff;
-    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
-    box-shadow: 0 2px 8px rgba(30,102,64,0.3);
-    transition: opacity 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+    background: var(--wt-gradient);
+    box-shadow: 0 4px 20px rgba(79, 70, 229, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.15s ease;
 }
-button[type="submit"]:hover {
-    opacity: 0.92;
-    box-shadow: 0 4px 14px rgba(30,102,64,0.35);
-}
-button[type="submit"]:active { transform: scale(0.98); }
 
-/* Тесен екран: една колона, формата под инфо панела */
+button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(79, 70, 229, 0.4);
+}
+
+button[type="submit"]:active {
+    transform: scale(0.98);
+}
+
+/* Responsive */
 @media (max-width: 800px) {
     .page-body {
         grid-template-columns: 1fr;
     }
+
     .info-panel {
         padding: 2rem 1.5rem;
         gap: 1.5rem;
     }
+
     .form-panel {
         border-left: none;
-        border-top: 1px solid #e4e9e4;
+        border-top: 1px solid var(--wt-border);
     }
 }

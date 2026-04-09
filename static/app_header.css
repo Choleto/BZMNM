@@ -32,7 +32,7 @@
     justify-self: start;
 }
 
-/* Градиентът на плочката с листото — като при иконата на картата за вход в auth.css */
+/* Лого WearTrack — индиго → циан */
 .bc-navbar__logo {
     display: inline-flex;
     align-items: center;
@@ -43,33 +43,40 @@
     line-height: 1;
     text-decoration: none;
     border-radius: 12px;
-    background: linear-gradient(135deg, #1e6640 0%, #2d9157 100%);
-    border: 1px solid rgba(30, 102, 64, 0.45);
-    box-shadow: 0 2px 8px rgba(30, 102, 64, 0.2);
+    background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+    border: 1px solid rgba(79, 70, 229, 0.35);
+    box-shadow: 0 2px 12px rgba(79, 70, 229, 0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
-.bc-navbar__logo:hover {
-    filter: brightness(1.06);
-    transform: scale(1.03);
-    box-shadow: 0 4px 14px rgba(30, 102, 64, 0.28);
+.bc-navbar__logo-mark {
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
 }
 
-/* Цветовете на името „Bio Clother“ съвпадат със страниците за вход/регистрация */
+.bc-navbar__logo:hover {
+    filter: brightness(1.05);
+    transform: scale(1.03);
+    box-shadow: 0 4px 18px rgba(79, 70, 229, 0.35);
+}
+
 .bc-navbar__brand {
     grid-column: 2;
     justify-self: center;
     font-size: 1.12rem;
     font-weight: 700;
     letter-spacing: -0.03em;
-    color: #1e293b;
+    color: #0f172a;
     text-decoration: none;
     white-space: nowrap;
 }
 
 .bc-navbar__brand-accent {
     font-style: normal;
-    color: #15803d;
+    color: #06b6d4;
 }
 
 .bc-navbar__brand:hover {
@@ -77,7 +84,7 @@
 }
 
 .bc-navbar__brand:hover .bc-navbar__brand-accent {
-    color: #14532d;
+    color: #0891b2;
 }
 
 .bc-navbar__toggle {

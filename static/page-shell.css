@@ -11,6 +11,7 @@
 
 html {
     -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -20,10 +21,16 @@ body {
     flex-direction: column;
     font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
         sans-serif;
-    background: linear-gradient(150deg, #1a5c38 0%, #1e6640 100%);
+    background: linear-gradient(160deg, #eef2ff 0%, #f8fafc 45%, #f1f5f9 100%);
     background-attachment: fixed;
-    color: #18181b;
+    color: #0f172a;
     line-height: 1.5;
+}
+
+/* WearTrack начална страница — чист фон по спецификация */
+body.page-home {
+    background: #f8fafc;
+    color: #0f172a;
 }
 
 a {
@@ -44,32 +51,84 @@ body > .page-body {
     width: 100%;
 }
 
-/* Общ долен колонтитул — шаблонът е includes/app_footer.html */
+/* Общ долен колонтитул — includes/app_footer.html (четим на светъл фон) */
 .app-footer {
     flex-shrink: 0;
     width: 100%;
     margin-top: auto;
-    padding: 0.75rem 1rem;
-    text-align: center;
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.78);
-    background: rgba(0, 0, 0, 0.18);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.app-footer__text {
-    margin: 0;
-}
-
-body.chat-body .app-footer {
-    color: #64748b;
-    background: #eef1f4;
+    padding: 1.25rem 1.25rem 1.5rem;
+    background: #f1f5f9;
     border-top: 1px solid #e2e8f0;
 }
 
-/* Зеленият банер под навигацията — един и същ на картата и в гардероба */
+.app-footer__inner {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.app-footer__tagline {
+    margin: 0 0 0.85rem;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    font-weight: 500;
+    color: #0f172a;
+}
+
+.app-footer__contact {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem 0.5rem;
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #475569;
+}
+
+.app-footer__label {
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.app-footer__sep {
+    color: #cbd5e1;
+    padding: 0 0.15rem;
+}
+
+.app-footer__link {
+    color: #4f46e5;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.app-footer__link:hover {
+    color: #06b6d4;
+    text-decoration: underline;
+}
+
+.app-footer__copy {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #64748b;
+}
+
+/* Обратна съвместимост ако някъде още се ползва старият клас */
+.app-footer__text {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #475569;
+}
+
+/* Банер под навигацията — гардероб / карта (индиго палитра) */
 .page-hero {
-    background: linear-gradient(135deg, #1e6640 0%, #2d9157 55%, #4cba78 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
     color: #fff;
     padding: 2rem 2.5rem;
     display: flex;
