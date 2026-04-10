@@ -526,6 +526,39 @@ button[type="submit"]:active {
     transform: scale(0.98);
 }
 
+.outfit-status-container {
+    margin-top: 1.5rem;
+    padding: 1rem 1.2rem;
+    border-radius: var(--wt-radius);
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+    border: 1px solid rgba(79, 70, 229, 0.25);
+    border-left: 3px solid var(--wt-primary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--wt-text);
+    white-space: pre-line;
+    word-break: break-word;
+    animation: slideIn 0.3s ease-out;
+}
+
+.outfit-status-container:empty {
+    display: none;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        margin-top: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+        margin-top: 1.5rem;
+    }
+}
+
 /* Responsive */
 @media (max-width: 800px) {
     .page-body {

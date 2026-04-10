@@ -109,7 +109,10 @@
         var file = outfitInput.files && outfitInput.files[0];
         if (!file) return;
 
-        if (outfitStatus) outfitStatus.textContent = "Анализирам...";
+        if (outfitStatus) {
+            outfitStatus.textContent = "Анализирам...";
+            outfitStatus.removeAttribute("hidden");
+        }
         outfitBtn.disabled = true;
 
         var formData = new FormData();
@@ -123,7 +126,10 @@
             var data = await response.json();
 
             if (data.error) {
-                if (outfitStatus) outfitStatus.textContent = " " + data.error;
+                if (outfitStatus) {
+                    outfitStatus.textContent = data.error;
+                    outfitStatus.removeAttribute("hidden");
+                }
                 return;
             }
 
@@ -134,9 +140,15 @@
                     : name + " — добавено в гардероба";
             }).join("\n");
 
-            if (outfitStatus) outfitStatus.textContent = summary;
+            if (outfitStatus) {
+                outfitStatus.textContent = summary;
+                outfitStatus.removeAttribute("hidden");
+            }
         } catch (err) {
-            if (outfitStatus) outfitStatus.textContent = " Грешка при свързване със сървъра.";
+            if (outfitStatus) {
+                outfitStatus.textContent = "Грешка при свързване със сървъра.";
+                outfitStatus.removeAttribute("hidden");
+            }
         } finally {
             outfitBtn.disabled = false;
         }

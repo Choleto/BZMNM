@@ -150,6 +150,40 @@ def inject_user_extras():
         "profile_pic_url": url_for("static", filename=pic) if pic else None,
     }
 
+def colors_are_similar(color1, color2):
+    """Simple color similarity check. Returns True if colors might match."""
+    if not color1 or not color2:
+        return False
+    
+    c1 = str(color1).strip().lower()
+    c2 = str(color2).strip().lower()
+    
+    # Exact match
+    if c1 == c2:
+        return True
+    
+    # Both hex colors: compare them (simple hue distance)
+    if c1.startswith("#") and c2.startswith("#"):
+        try:
+            # Simple heuristic: convert to RGB and compare basic similarity
+            rgb1 = tuple(int(c1[i:i+2], 16) for i in (1, 3, 5))
+            rgb2 = tuple(int(c2[i:i+2], 16) for i in (1, 3, 5))
+            # Euclidean distance in RGB space
+            distance = sum((a - b) ** 2 for a, b in zip(rgb1, rgb2)) ** 0.5
+            return distance < 100  # Threshold for similar colors
+        except:
+            return False
+    
+    # Text colors: check if words overlap (e.g., "light blue" ~ "blue")
+    words1 = set(c1.split())
+    words2 = set(c2.split())
+    common_words = words1 & words2
+    if common_words or c1 in c2 or c2 in c1:
+        return True
+    
+    return False
+
+
 def find_wardrobe_match(outfit_image_bytes, mime_type, item_data, user_id):
     from google.genai import types
 
@@ -162,38 +196,74 @@ def find_wardrobe_match(outfit_image_bytes, mime_type, item_data, user_id):
     if not candidates:
         return None
 
-    for item in candidates:
+    detected_color = item_data.get("color", "")
+    best_match = None
+    best_confidence = 0
+
+    # Pre-filter candidates by color similarity
+    color_filtered = [item for item in candidates if colors_are_similar(detected_color, item.color)]
+    candidates_to_check = color_filtered if color_filtered else candidates[:5]
+
+    for item in candidates_to_check:
         full_path = os.path.join(app.root_path, "static", item.image_path.replace("/", os.sep))
         if not item.image_path or not os.path.exists(full_path):
             continue
 
-        with open(full_path, "rb") as f:
-            stored_bytes = f.read()
+        try:
+            with open(full_path, "rb") as f:
+                stored_bytes = f.read()
+        except Exception:
+            continue
 
         prompt_match = f"""
-        The first image is a full outfit photo.
-        The second image is a stored wardrobe item.
-        Focus only on the {item_data['type']} in the first image.
-        Does it match the item in the second image?
-        Consider color, print, graphic, pattern carefully.
-        Two items of the same color but different prints are NOT a match.
-        Reply only with JSON: {{"match": true/false, "confidence": 0-100}}
+        Compare these two images of {item_data['type']}.
+        First image: A full outfit photo (focus only on the {item_data['type']})
+        Second image: A stored wardrobe item
+        
+        Question: Is the {item_data['type']} in the first image the SAME ITEM (or extremely similar) as the second image?
+        
+        Match if:
+        - Same color AND same pattern/print
+        - Same design and style
+        - Obviously the same or identical items
+        
+        Do NOT match if:
+        - Different colors
+        - Same color but different prints/patterns
+        - Different styles or designs
+        
+        Be generous with confidence - if they look like they could be the same item, give high confidence.
+        
+        Reply ONLY with valid JSON: {{"match": true/false, "confidence": 0-100}}
         """
 
         try:
             response = client.models.generate_content(
-                model="gemini-2.0-flash-lite",
+                model="gemini-2.5-flash",
                 contents=[
                     types.Part.from_bytes(data=outfit_image_bytes, mime_type=mime_type),
                     types.Part.from_bytes(data=stored_bytes, mime_type="image/jpeg"),
                     prompt_match
                 ]
             )
-            result = json.loads(response.text.strip())
-            if result.get("match") and result.get("confidence", 0) >= 80:
-                return item
+            raw = response.text.strip()
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+            raw = raw.strip()
+            result = json.loads(raw)
+
+            confidence = result.get("confidence", 0)
+            if result.get("match") and confidence > best_confidence:
+                best_confidence = confidence
+                best_match = item
         except Exception:
             continue
+
+    # Return best match if confidence is reasonably high (50% or above)
+    if best_match and best_confidence >= 50:
+        return best_match
 
     return None
 
@@ -503,13 +573,19 @@ def analyze_outfit():
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash-lite",
+            model="gemini-2.5-flash",
             contents=[
                 types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
                 prompt_segment
             ]
         )
-        detected_items = json.loads(response.text.strip())
+        raw = response.text.strip()
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+        raw = raw.strip()
+        detected_items = json.loads(raw)
     except Exception as exc:
         return jsonify({"error": "AI грешка: %s" % str(exc)}), 500
 
@@ -627,7 +703,7 @@ def ai_chat():
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash-lite",
+            model="gemini-2.5-flash",
             contents=prompt_for_model,
         )
         ai_reply = response.text.strip() if hasattr(response, "text") else str(response)
